@@ -10,6 +10,13 @@
 
         public string UserId { get; set; } = string.Empty;
         public ApplicationUser User { get; set; } = default!;
+        public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+        public ICollection<Invoice> Invoice { get; set; } = new List<Invoice>();
+
+        public ICollection<Stay> Stays { get; set; } = new List<Stay>();
+        public ICollection<Operation> Operations { get; set; } = new List<Operation>();
+
+
 
     }
 }

@@ -14,6 +14,7 @@ namespace ClincManagement.API.EntitiesConfigurations
             builder.HasOne(n => n.User)
                 .WithOne(u => u.Patient)
                 .HasForeignKey<Patient>(n => n.UserId);
+           
 
             builder.HasIndex(n => n.NationalId)
                 .IsUnique();

@@ -13,6 +13,12 @@ namespace ClincManagement.API.Data
         }
         public DbSet<Doctor> Doctors => Set<Doctor>();
         public DbSet<Patient> Patients => Set<Patient>();
+        public DbSet<Operation> Operations => Set<Operation>();
+        public DbSet<Appointment> Appointments => Set<Appointment>();
+        public DbSet<Invoice> Invoices => Set<Invoice>();
+        public DbSet<Stay> Stays => Set<Stay>();
+        public DbSet<Clinic> Clinics => Set<Clinic>();
+
 
 
     }

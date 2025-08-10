@@ -13,6 +13,7 @@
             builder.HasOne(d => d.User)
                 .WithOne(u => u.Doctor)
                 .HasForeignKey<Doctor>(d => d.userId);
+            
         }
     }
 }
