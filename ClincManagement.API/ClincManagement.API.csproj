@@ -7,10 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
+    <Folder Include="Contracts\Clinic\Requests\" />
+    <Folder Include="Contracts\Doctors\Requests\" />
+    <Folder Include="Contracts\Invoice\Requests\" />
+    <Folder Include="Contracts\Invoice\Respones\" />
+    <Folder Include="Contracts\Operation\Requests\" />
+    <Folder Include="Contracts\Operation\Respones\" />
+    <Folder Include="Contracts\Stay\Requests\" />
+    <Folder Include="Contracts\Stay\Respones\" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Controllers\DoctorsControllercs.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Apis.Auth" Version="1.70.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.8">

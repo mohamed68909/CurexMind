@@ -18,6 +18,7 @@
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+            
 
             return services;
         }

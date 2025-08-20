@@ -9,6 +9,7 @@ namespace ClincManagement.API
 
             builder.Services.AddDependansiesServices(builder.Configuration);
 
+
             var app = builder.Build();
 
 

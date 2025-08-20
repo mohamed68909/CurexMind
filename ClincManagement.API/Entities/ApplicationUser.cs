@@ -7,7 +7,7 @@
 
         public Doctor Doctor { get; set; } = default!;
         public Patient Patient { get; set; } = default!;
-
-
+        public ICollection<RefreshToken> refreshTokens { get; set; } = default!;
+        public bool IsDisabled { get; internal set; }
     }
 }
