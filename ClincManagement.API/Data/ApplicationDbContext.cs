@@ -18,6 +18,7 @@ namespace ClincManagement.API.Data
         public DbSet<Invoice> Invoices => Set<Invoice>();
         public DbSet<Stay> Stays => Set<Stay>();
         public DbSet<Clinic> Clinics => Set<Clinic>();
+        public DbSet<VitalSigns> VitalSigns => Set<VitalSigns>();
 
 
 

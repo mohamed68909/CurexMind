@@ -1,9 +1,9 @@
 ﻿namespace ClincManagement.API.Contracts.Patient.Respones
 {
-    public record ResponsePatientsCreated
+    public record PatientCreateResponseDto
    (
         Guid PatientId,
-        string patientNumber,
+        
         string message = "Patient created successfully."
 
 

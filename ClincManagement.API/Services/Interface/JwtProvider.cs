@@ -7,6 +7,7 @@ using System.Text;
 
 using ClincManagement.API.Settings;
 using ClincManagement.API.Services.Interface;
+using CurexMind.API.Services.Interface;
 
 namespace CurexMind.API.Services
 {
@@ -21,7 +22,7 @@ namespace CurexMind.API.Services
                 new(JwtRegisteredClaimNames.Sub, user.Id),
                 new(JwtRegisteredClaimNames.Email, user.Email!),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new("fullName", user.FullName)
+                //new("fullName", user.FullName)
             };
 
             // Roles

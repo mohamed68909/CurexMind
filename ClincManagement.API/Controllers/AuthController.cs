@@ -10,11 +10,11 @@ namespace ClincManagement.API.Controllers
     public class AuthController(IAuthService authServices) : ControllerBase
     {
         private readonly IAuthService _authServices = authServices;
-        [HttpPost("sign-up")]
-        public async Task<Result<IActionResult>>SignUp([FromBody] SignUpRequest request, CancellationToken cancellationToken)
-        {
-            var result = await _authServices.SignUpPatientAsync(request, cancellationToken);
-            return ;
-        }
+        //[HttpPost("sign-up")]
+        //public async Task<Result<IActionResult>>SignUp([FromBody] SignUpRequest request, CancellationToken cancellationToken)
+        //{
+        //    var result = await _authServices.SignUpPatientAsync(request, cancellationToken);
+        //    return ;
+        //}
     }
 }

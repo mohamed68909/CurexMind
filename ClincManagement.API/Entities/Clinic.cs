@@ -8,7 +8,7 @@
         public string? Location { get; set; }
          public bool? IsActive { get; set; }=true;
         public DateTime CreatedDate { get; set; }=DateTime.Now;
-        public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+        public ICollection<Appointment> Appointments { get; set; } = default!;
 
 
 
