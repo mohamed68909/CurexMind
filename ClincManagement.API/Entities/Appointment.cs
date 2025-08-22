@@ -7,9 +7,10 @@
         public Guid DoctorId { get; set; }
         public Guid ClinicId { get; set; }
         public DateTime AppointmentDate { get; set; }
-        public DateTime AppointmentTime { get; set; }
+        public string AppointmentTime { get; set; } = string.Empty;
         public string?  Notes { get; set; }
         public int Duration { get; set; } 
+        public bool ? IsDeleted { get; set; } = false;
 
 
         public AppointmentType Type { get; set; } 

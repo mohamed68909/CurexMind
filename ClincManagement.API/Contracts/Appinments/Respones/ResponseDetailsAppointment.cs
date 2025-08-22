@@ -1,4 +1,6 @@
-﻿namespace ClincManagement.API.Contracts.Appinments.Requests
+﻿using ClincManagement.API.Contracts.Patient.Responses;
+
+namespace ClincManagement.API.Contracts.Appinments.Respones
 {
     public record ResponseDetailsAppointment
     (
@@ -8,10 +10,18 @@
          string clinic,
             DateTime appointmentDate,
             string appointmentTime,
-            string appointmentType,
-            string status 
+            AppointmentType appointmentType,
+            AppointmentStatus status 
         
 
 
         );
+    public record PagedAppointmentResponse
+(
+    IEnumerable<ResponseDetailsAppointment> Data,
+    int TotalCount,
+    int Page,
+    int PageSize,
+    int TotalPages
+);
 }

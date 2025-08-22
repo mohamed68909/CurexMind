@@ -1,6 +1,6 @@
 ﻿namespace ClincManagement.API.Contracts.Appinments.Requests
 {
-    public record CreateReAppointment
+    public record CreateRequestAppointment
     (
         Guid PatientId,
         Guid DoctorId,
@@ -8,8 +8,8 @@
       DateTime AppointmentDate,
      string AppointmentTime,
      int Duration,
-     string appointmentType,
-        string? status,
+     AppointmentType appointmentType,
+        AppointmentStatus? status,
         string? notes
 
     );
