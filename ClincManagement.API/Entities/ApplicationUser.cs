@@ -10,7 +10,7 @@
         public bool IsActive { get; set; } = true;
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public Patient Patient { get; set; } = default!;
-        public ICollection<RefreshToken> refreshTokens { get; set; } = default!;
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = default!;
         public bool IsDisabled { get; internal set; }
         public ICollection<VitalSigns> VitalSigns { get; set; } = default!;
       

@@ -1,3 +1,5 @@
+using Mapster;
+
 namespace ClincManagement.API
 {
     public class Program
@@ -9,6 +11,7 @@ namespace ClincManagement.API
 
             builder.Services.AddDependansiesServices(builder.Configuration);
 
+           
 
             var app = builder.Build();
 

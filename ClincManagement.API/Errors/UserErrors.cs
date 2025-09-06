@@ -16,6 +16,18 @@
             new("Auth.ExternalLoginFailed", "Failed to associate external login (Google) with the user.", StatusCodes.Status422UnprocessableEntity);
         public static readonly Error UserCreationFailed =
             new("Auth.UserCreationFailed", "Unable to create the user account due to a processing error.", StatusCodes.Status422UnprocessableEntity);
+        public static readonly Error NotFound =
+            new("User.NotFound", "The specified user was not found.", StatusCodes.Status404NotFound);
+        public static readonly Error InvalidRole =
+            new("User.InvalidRoles", "User is not an has this roles", StatusCodes.Status401Unauthorized);
+        public static readonly Error InvalidToken =
+            new("User.InvalidToken", "The provided token is invalid or expired.", StatusCodes.Status401Unauthorized);
+        public static readonly Error RefreshTokenExpired =
+           new("User.RefreshTokenExpired", "The refresh token has expired.", StatusCodes.Status401Unauthorized);
+        public static readonly Error RefreshTokenAlreadyRevoked =
+            new("User.RefreshTokenAlreadyRevoked", "The refresh token has already been revoked.", StatusCodes.Status400BadRequest);
+        public static readonly Error UpdateFailed =
+                   new("User.UpdateFailed", "Failed to update user profile due to a processing error.", StatusCodes.Status422UnprocessableEntity);
 
 
     }
