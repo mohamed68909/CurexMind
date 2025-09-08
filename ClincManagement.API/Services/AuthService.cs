@@ -41,7 +41,7 @@ public class AuthService(
         user.UserName = _userHelpers.GetUserName(request.Email);
 
         var result = await _userManager.CreateAsync(user, request.Password);
-        await _userManager.AddToRoleAsync(user, DefaultRoles.Patient.Name);
+       // await _userManager.AddToRoleAsync(user, "PATIENT");
         if (result.Succeeded)
             return Result.Success(await GetAuthResponse(user));
         var error = result.Errors.First();

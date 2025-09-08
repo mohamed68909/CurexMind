@@ -7,6 +7,7 @@
         string UserName,
         string Password,
         string ConfirmPassword,
+        string Address,
         string PhoneNumber
 
 

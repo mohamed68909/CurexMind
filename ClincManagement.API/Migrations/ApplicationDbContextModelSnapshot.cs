@@ -45,9 +45,8 @@ namespace ClincManagement.API.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
@@ -120,8 +119,9 @@ namespace ClincManagement.API.Migrations
                     b.Property<DateTime>("AppointmentDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("AppointmentTime")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("AppointmentTime")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("ClinicId")
                         .HasColumnType("uniqueidentifier");
@@ -138,6 +138,9 @@ namespace ClincManagement.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(30);
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
@@ -635,7 +638,7 @@ namespace ClincManagement.API.Migrations
 
             modelBuilder.Entity("ClincManagement.API.Entities.ApplicationUser", b =>
                 {
-                    b.OwnsMany("ClincManagement.API.Entities.RefreshToken", "refreshTokens", b1 =>
+                    b.OwnsMany("ClincManagement.API.Entities.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("ApplicationUserId")
                                 .HasColumnType("nvarchar(450)");
@@ -667,7 +670,7 @@ namespace ClincManagement.API.Migrations
                                 .HasForeignKey("ApplicationUserId");
                         });
 
-                    b.Navigation("refreshTokens");
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Appointment", b =>

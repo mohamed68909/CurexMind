@@ -10,8 +10,7 @@
             builder.Property(u => u.Address)
                 .IsRequired()
                 .HasMaxLength(100);
-            builder.Property(u => u.Email).IsRequired()
-                .HasMaxLength(100);
+           
             builder.Property(u => u.IsActive).IsRequired()
                 .HasDefaultValue(true);
             builder.Property(u => u.CreatedDate).HasConversion(

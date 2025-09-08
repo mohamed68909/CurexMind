@@ -15,7 +15,11 @@ namespace ClincManagement.API
 
             var app = builder.Build();
 
-
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapSwagger();
+                app.UseSwaggerUI();
+            }
             app.UseHttpsRedirection();
 
             app.UseAuthorization();

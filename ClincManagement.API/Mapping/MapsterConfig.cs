@@ -14,7 +14,11 @@ namespace ClincManagement.API.Mapping
         public void Register(TypeAdapterConfig config)
         {
             // User mappings
-            config.NewConfig<SignUpRequest, ApplicationUser>();
+            config.NewConfig<SignUpRequest, ApplicationUser>()
+               .Map(dest => dest.EmailConfirmed, src => true);
+
+
+                ;
                 
                
             config.NewConfig<CreateRequestAppointment, Appointment>();
