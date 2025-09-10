@@ -7,8 +7,6 @@
      
         public string Address { get; set; }
         public Doctor Doctor { get; set; } = default!;
-        public bool IsActive { get; set; } = true;
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public Patient Patient { get; set; } = default!;
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
         public bool IsDisabled { get; internal set; }

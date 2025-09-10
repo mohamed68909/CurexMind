@@ -70,8 +70,8 @@ public class PatientService : IPatientService
             CalculateAge(p.DateOfBirth),
  
             p.User.PhoneNumber,
-            p.User.Address, 
-            p.User.CreatedDate
+            p.User.Address
+          
 
 
 
@@ -100,7 +100,7 @@ public class PatientService : IPatientService
                 PhoneNumber = request.PhoneNumber,
                 Email = request.Email,
                 Address = request.Address,
-                CreatedDate = DateTime.UtcNow
+               
             },
             NationalId = request.NationalId,
             DateOfBirth = request.DateOfBirth,

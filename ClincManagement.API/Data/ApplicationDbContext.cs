@@ -4,7 +4,7 @@ using System.Reflection;
 namespace ClincManagement.API.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : IdentityDbContext<ApplicationUser>(options)
+        : IdentityDbContext<ApplicationUser,ApplicationRole,string>(options)
     {
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

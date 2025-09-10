@@ -1,5 +1,4 @@
-﻿using ClincManagement.API.Abstractions;
-using ClincManagement.API.Abstractions.Consts;
+﻿using ClincManagement.API.Abstractions.Consts;
 using ClincManagement.API.Contracts.Authentications.Requests;
 using ClincManagement.API.Contracts.Authentications.Respones;
 using ClincManagement.API.Errors;
@@ -9,11 +8,9 @@ using CurexMind.API.Services.Interface;
 using Google.Apis.Auth;
 using Google.Apis.Auth.OAuth2.Requests;
 using Mapster;
-using Microsoft.AspNetCore.Identity;
 using System.Security.Cryptography;
-using System.Text;
 
-namespace HospitalManagement.API.Services;
+namespace ClincManagement.API.Services;
 
 public class AuthService(
         UserManager<ApplicationUser> userManager,
@@ -32,21 +29,34 @@ public class AuthService(
 
     public async Task<Result<AuthResponse>> SignUpAsync(SignUpRequest request, CancellationToken cancellationToken = default)
     {
+       
         var emailIsExists = await _userManager.Users
             .AnyAsync(u => u.Email == request.Email, cancellationToken);
+
         if (emailIsExists)
             return Result.Failure<AuthResponse>(UserErrors.DublicatedEmail);
-        var user = request.Adapt<ApplicationUser>();
 
+        var user = request.Adapt<ApplicationUser>();
         user.UserName = _userHelpers.GetUserName(request.Email);
 
         var result = await _userManager.CreateAsync(user, request.Password);
-       // await _userManager.AddToRoleAsync(user, "PATIENT");
-        if (result.Succeeded)
-            return Result.Success(await GetAuthResponse(user));
-        var error = result.Errors.First();
-        return Result.Failure<AuthResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+
+        if (!result.Succeeded)
+        {
+            var error = result.Errors.First();
+            return Result.Failure<AuthResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+        }
+        var roleResult = await _userManager.AddToRoleAsync(user, DefaultRoles.Patient.Name);
+
+        if (!roleResult.Succeeded)
+        {
+            var error = roleResult.Errors.First();
+            return Result.Failure<AuthResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+        }
+
+        return Result.Success(await GetAuthResponse(user));
     }
+
     public async Task<Result<AuthResponse>> SignInAsync(SignInEmailRequest request, CancellationToken cancellationToken = default)
     {
         if (await _userManager.FindByEmailAsync(request.Email.ToLowerInvariant()) is not { } user)

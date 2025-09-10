@@ -6,7 +6,6 @@ using MapsterMapper;
 using System.Reflection;
 using CurexMind.API.Services.Interface;
 using CurexMind.API.Services;
-using HospitalManagement.API.Services;
 using ClincManagement.API.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -39,8 +38,10 @@ namespace ClincManagement.API.Extentions
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddIdentity<ApplicationUser, ApplicationRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
 
             return services;
         }
@@ -102,5 +103,6 @@ namespace ClincManagement.API.Extentions
 
             return services;
         }
+       
     }
 }

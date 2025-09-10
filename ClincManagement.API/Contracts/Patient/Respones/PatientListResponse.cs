@@ -9,8 +9,8 @@ namespace ClincManagement.API.Contracts.Patient.Responses
         Gender Gender,
         int Age,
         string? PhoneNumber,
-        string? Address,
-        DateTime RegistrationDate
+        string? Address
+       
     )
     {
         private Guid id;

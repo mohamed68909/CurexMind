@@ -1,4 +1,4 @@
-﻿namespace ClincManagement.API.Abstractions
+﻿namespace ClincManagement.API.Abstractions.Consts
 {
     public static class DefaultRoles
     {

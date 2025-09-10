@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ClincManagement.API.Migrations
+namespace ClincManagement.API.Data.Migrationns
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -21,6 +21,59 @@ namespace ClincManagement.API.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("ClincManagement.API.Entities.ApplicationRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "8757DDE1-DA74-4A92-9EEB-46C4A35AC090",
+                            ConcurrencyStamp = "F167EA47-FC22-4A47-81F9-1E21C11DB217",
+                            IsDefault = false,
+                            IsDeleted = false,
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "4D447E8A-B35A-4DAE-BCE3-4552BF828693",
+                            ConcurrencyStamp = "E9FD0D85-6770-4A99-B3A2-69158B9EF3D7",
+                            IsDefault = false,
+                            IsDeleted = false,
+                            Name = "Patient",
+                            NormalizedName = "PATIENT"
+                        });
+                });
 
             modelBuilder.Entity("ClincManagement.API.Entities.ApplicationUser", b =>
                 {
@@ -39,11 +92,6 @@ namespace ClincManagement.API.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getutcdate()");
-
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -55,11 +103,6 @@ namespace ClincManagement.API.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
 
                     b.Property<bool>("IsDisabled")
                         .HasColumnType("bit");
@@ -108,6 +151,28 @@ namespace ClincManagement.API.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
+                            AccessFailedCount = 0,
+                            Address = "Cairo, Egypt",
+                            ConcurrencyStamp = "CE9E600E-ECD5-4400-92E6-986F63EEC953",
+                            Email = "dev@mohamed.com",
+                            EmailConfirmed = true,
+                            FullName = "Mohamed Ashraf",
+                            IsDisabled = false,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "DEV@MOHAMED.COM",
+                            NormalizedUserName = "DEV@MOHAMED.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEKj70KPmPc7BxyRhD9MuptCGolRkbmTp27lM/5HLVQxdU/qZw0HwYDAGR9JyB4c19Q==",
+                            PhoneNumber = "01234567890",
+                            PhoneNumberConfirmed = true,
+                            SecurityStamp = "2FCB053BC1F041F2B07D3E7608D8020E",
+                            TwoFactorEnabled = false,
+                            UserName = "dev@mohamed.com"
+                        });
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Appointment", b =>
@@ -503,33 +568,6 @@ namespace ClincManagement.API.Migrations
                     b.ToTable("VitalSigns", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
-
-                    b.ToTable("AspNetRoles", (string)null);
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
@@ -615,6 +653,13 @@ namespace ClincManagement.API.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
+                            RoleId = "8757DDE1-DA74-4A92-9EEB-46C4A35AC090"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -788,7 +833,7 @@ namespace ClincManagement.API.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                    b.HasOne("ClincManagement.API.Entities.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -815,7 +860,7 @@ namespace ClincManagement.API.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                    b.HasOne("ClincManagement.API.Entities.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
