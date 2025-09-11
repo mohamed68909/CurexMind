@@ -26,6 +26,7 @@
         public ICollection<Operation> Operations { get; set; } = default!;
         public ICollection<VitalSigns> VitalSigns { get; set; } = default!;
 
+        public ICollection<Review> Reviews { get; set; } = default!;
 
 
     }

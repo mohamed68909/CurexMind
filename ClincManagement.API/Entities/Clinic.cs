@@ -10,6 +10,10 @@
         public DateTime CreatedDate { get; set; }=DateTime.Now;
         public ICollection<Appointment> Appointments { get; set; } = default!;
 
+        public ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
+
+      
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
 
 
 

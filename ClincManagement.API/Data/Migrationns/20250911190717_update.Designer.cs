@@ -4,6 +4,7 @@ using ClincManagement.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClincManagement.API.Data.Migrationns
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250911190717_update")]
+    partial class update
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,7 +161,7 @@ namespace ClincManagement.API.Data.Migrationns
                             Id = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
                             AccessFailedCount = 0,
                             Address = "Cairo, Egypt",
-                            ConcurrencyStamp = "admin-concurrency-stamp",
+                            ConcurrencyStamp = "CE9E600E-ECD5-4400-92E6-986F63EEC953",
                             Email = "dev@mohamed.com",
                             EmailConfirmed = true,
                             FullName = "Mohamed Ashraf",
@@ -169,66 +172,9 @@ namespace ClincManagement.API.Data.Migrationns
                             PasswordHash = "AQAAAAIAAYagAAAAEKj70KPmPc7BxyRhD9MuptCGolRkbmTp27lM/5HLVQxdU/qZw0HwYDAGR9JyB4c19Q==",
                             PhoneNumber = "01234567890",
                             PhoneNumberConfirmed = true,
-                            SecurityStamp = "admin-security-stamp",
+                            SecurityStamp = "2FCB053BC1F041F2B07D3E7608D8020E",
                             TwoFactorEnabled = false,
                             UserName = "dev@mohamed.com"
-                        },
-                        new
-                        {
-                            Id = "user-1",
-                            AccessFailedCount = 0,
-                            Address = "Cairo, Egypt",
-                            ConcurrencyStamp = "doctor1-concurrency-stamp",
-                            Email = "doctor1@example.com",
-                            EmailConfirmed = true,
-                            FullName = "Doctor One",
-                            IsDisabled = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DOCTOR1@EXAMPLE.COM",
-                            NormalizedUserName = "DOCTOR1@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAENCRYPTED_PASSWORD_HASH",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "doctor1-security-stamp",
-                            TwoFactorEnabled = false,
-                            UserName = "doctor1@example.com"
-                        },
-                        new
-                        {
-                            Id = "user-2",
-                            AccessFailedCount = 0,
-                            Address = "Cairo, Egypt",
-                            ConcurrencyStamp = "doctor2-concurrency-stamp",
-                            Email = "doctor2@example.com",
-                            EmailConfirmed = true,
-                            FullName = "Doctor Two",
-                            IsDisabled = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DOCTOR2@EXAMPLE.COM",
-                            NormalizedUserName = "DOCTOR2@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAENCRYPTED_PASSWORD_HASH",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "doctor2-security-stamp",
-                            TwoFactorEnabled = false,
-                            UserName = "doctor2@example.com"
-                        },
-                        new
-                        {
-                            Id = "user-3",
-                            AccessFailedCount = 0,
-                            Address = "Cairo, Egypt",
-                            ConcurrencyStamp = "patient1-concurrency-stamp",
-                            Email = "patient1@example.com",
-                            EmailConfirmed = true,
-                            FullName = "Patient One",
-                            IsDisabled = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "PATIENT1@EXAMPLE.COM",
-                            NormalizedUserName = "PATIENT1@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAENCRYPTED_PASSWORD_HASH",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "patient1-security-stamp",
-                            TwoFactorEnabled = false,
-                            UserName = "patient1@example.com"
                         });
                 });
 
@@ -341,26 +287,6 @@ namespace ClincManagement.API.Data.Migrationns
                         .HasDatabaseName("IX_ClinicName");
 
                     b.ToTable("Clinics");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            CreatedDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "General healthcare and diagnostics",
-                            IsActive = true,
-                            Location = "Cairo",
-                            Name = "Future Clinic"
-                        },
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            CreatedDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Specialized in dental care",
-                            IsActive = true,
-                            Location = "Alexandria",
-                            Name = "Smile Dental Center"
-                        });
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Doctor", b =>
@@ -393,24 +319,6 @@ namespace ClincManagement.API.Data.Migrationns
                         .IsUnique();
 
                     b.ToTable("Doctors");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            ClinicId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            FullName = "Dr. Ahmed Ali",
-                            Specialization = "Cardiology",
-                            userId = "user-1"
-                        },
-                        new
-                        {
-                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
-                            ClinicId = new Guid("22222222-2222-2222-2222-222222222222"),
-                            FullName = "Dr. Sara Hassan",
-                            Specialization = "Dentistry",
-                            userId = "user-2"
-                        });
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Invoice", b =>
@@ -556,22 +464,6 @@ namespace ClincManagement.API.Data.Migrationns
                         .IsUnique();
 
                     b.ToTable("Patients");
-
-                    b.HasData(
-                        new
-                        {
-                            PatientId = new Guid("55555555-5555-5555-5555-555555555555"),
-                            CreatedDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DateOfBirth = new DateTime(1998, 5, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Gender = 1,
-                            IsActive = true,
-                            NationalId = "29812345678901",
-                            Notes = "Heart condition",
-                            ProfileImageUrl = "",
-                            SocialStatus = 1,
-                            UpdatedDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            UserId = "user-3"
-                        });
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Review", b =>
@@ -611,18 +503,6 @@ namespace ClincManagement.API.Data.Migrationns
                     b.HasIndex("PatientId");
 
                     b.ToTable("Reviews");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("77777777-7777-7777-7777-777777777777"),
-                            ClinicId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            Comment = "Excellent doctor!",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DoctorId = new Guid("33333333-3333-3333-3333-333333333333"),
-                            PatientId = new Guid("55555555-5555-5555-5555-555555555555"),
-                            Rating = 5
-                        });
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Stay", b =>

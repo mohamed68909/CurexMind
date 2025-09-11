@@ -12,7 +12,7 @@
         public int Duration { get; set; } 
         public bool ? IsDeleted { get; set; } = false;
 
-
+   
         public AppointmentType Type { get; set; } 
         public AppointmentStatus Status { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.Now;

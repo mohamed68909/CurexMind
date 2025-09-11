@@ -2,6 +2,7 @@
 using ClincManagement.API.Contracts.Appinments.Respones;
 using ClincManagement.API.Contracts.Authentications.Requests;
 using ClincManagement.API.Contracts.Clinic.Respones;
+using ClincManagement.API.Contracts.Doctors.Respones;
 using ClincManagement.API.Contracts.Patient.Requests;
 using ClincManagement.API.Contracts.Patient.Respones;
 using ClincManagement.API.Contracts.Patient.Responses;
@@ -18,12 +19,17 @@ namespace ClincManagement.API.Mapping
                .Map(dest => dest.EmailConfirmed, src => true);
 
 
-                ;
-                
                
             config.NewConfig<CreateRequestAppointment, Appointment>();
             config.NewConfig<Appointment, ResponseDetailsAppointment>();
-            config.NewConfig<Doctor, ResponseDetailsDoctors>();
+            config.NewConfig<Doctor, DoctorListResponse>()
+                .Map(dest => dest.ClinicName, src => src.Clinic.Name);
+             
+
+            config.NewConfig<Doctor, DoctorDetailsResponse>()
+                .Map(dest => dest.ClinicName, src => src.Clinic.Name)
+                .Map(dest => dest.Reviews, src => src.Reviews.Adapt<IEnumerable<ReviewResponse>>());
+
             config.NewConfig<Patient, PatientCreateResponseDto>();
             config.NewConfig<Patient, PagedPatientResponse>();
             config.NewConfig<Patient, PatientResponseDto>();

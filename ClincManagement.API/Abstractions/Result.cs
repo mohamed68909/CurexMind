@@ -17,7 +17,11 @@ public class Result
         public static Result<T> Success<T>(T value) => new(value, true, Error.None);
         public static Result<T> Failure<T>(Error error) => new(default, false, error);
 
+    internal static Result<T> Failure<T>(object notFound)
+    {
+        throw new NotImplementedException();
     }
+}
     public class Result<T>(T? value, bool isSuccess, Error error) : Result(isSuccess, error)
     {
         private readonly T? _value = value;
