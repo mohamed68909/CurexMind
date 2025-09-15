@@ -11,7 +11,7 @@
         public InvoiceStatus Status { get; set; }
         public string? Notes { get; set; }
         public DateTime? DueDate { get; set; }
-        public DateTime CreatedDate{ get; set; } = DateTime.Now;
+        public DateTime CreatedDate{ get; set; } 
         public Patient Patient { get; set; } = default!;
     }
 }

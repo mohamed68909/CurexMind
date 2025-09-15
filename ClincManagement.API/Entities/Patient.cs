@@ -10,8 +10,8 @@
             = string.Empty;
         public DateTime DateOfBirth { get; set; } = DateTime.Now;
         public string ProfileImageUrl { get; set; } = string.Empty;
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
-        public DateTime UpdatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } 
+        public DateTime UpdatedDate { get; set; } 
         public bool IsActive { get; set; } = true;
 
 
@@ -24,7 +24,7 @@
 
         public ICollection<Stay> Stays { get; set; } = default!;
         public ICollection<Operation> Operations { get; set; } = default!;
-        public ICollection<VitalSigns> VitalSigns { get; set; } = default!;
+        
 
         public ICollection<Review> Reviews { get; set; } = default!;
 

@@ -10,7 +10,7 @@
         public Patient Patient { get; set; } = default!;
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
         public bool IsDisabled { get; internal set; }
-        public ICollection<VitalSigns> VitalSigns { get; set; } = default!;
+      
       
     }
 }

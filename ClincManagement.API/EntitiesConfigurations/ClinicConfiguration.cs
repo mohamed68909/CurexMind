@@ -36,6 +36,23 @@ namespace ClincManagement.API.EntitiesConfigurations
                 .HasDatabaseName("IX_ClinicIsActive");
 
 
+            builder.HasData(
+      new Clinic
+      {
+          Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+          Name = "Main Clinic",
+          Description = "This is the main clinic located in the city center.",
+          Location = "123 Main St, Cityville",
+          IsActive = true,
+          CreatedDate = new DateTime(2025, 9, 15),
+
+      }
+   );
+
+
+
+
+
 
 
 

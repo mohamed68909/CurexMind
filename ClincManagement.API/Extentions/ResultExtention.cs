@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ClincManagement.API.Abstractions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ClincManagement.API.Extentions
 {

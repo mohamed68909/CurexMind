@@ -44,10 +44,7 @@ namespace ClincManagement.API.Controllers
         [ProducesResponseType(typeof(AddReviewResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> AddReview(
-            [FromRoute] Guid doctorId,
-            [FromBody] AddReviewRequest request,
-            CancellationToken cancellationToken)
+        public async Task<IActionResult> AddReview([FromRoute] Guid doctorId , [FromBody] AddReviewRequest request, CancellationToken cancellationToken)
         {
             
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

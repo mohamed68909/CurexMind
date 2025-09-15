@@ -36,6 +36,20 @@
 
             builder.HasIndex(o => o.SurgeonId)
                 .HasDatabaseName("IX_OperationSurgeonId");
+            builder.HasData(
+                new Operation
+                {
+                    Id = Guid.Parse("66666666-6666-6666-6666-666666666666"),
+                    PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    SurgeonId = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                    Name = "Heart Surgery",
+                    Date = new DateTime(2025, 10, 15), // ثابتة
+                    Tools = "Scalpel, Monitor",
+                    Cost = 20000,
+                    Notes = "Critical operation"
+                }
+            );
+
         }
     }
 }

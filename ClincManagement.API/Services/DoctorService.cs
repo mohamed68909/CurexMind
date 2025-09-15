@@ -1,4 +1,5 @@
-﻿using ClincManagement.API.Contracts.Clinic.Respones;
+﻿using ClincManagement.API.Abstractions;
+using ClincManagement.API.Contracts.Clinic.Respones;
 using ClincManagement.API.Contracts.Doctors.Respones;
 using ClincManagement.API.Contracts.Review.Requests;
 using ClincManagement.API.Contracts.Review.Respones;

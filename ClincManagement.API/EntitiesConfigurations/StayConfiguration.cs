@@ -25,17 +25,37 @@ namespace ClincManagement.API.EntitiesConfigurations
             builder.Property(s => s.TotalCost).HasConversion<decimal>()
                 .IsRequired()
                 .HasColumnType("decimal(18,2)");
+            builder.Property(s => s.CheckOutDate).HasConversion<DateTime?>()
+                .IsRequired(false);
             builder.HasOne(s => s.Patient)
                 .WithMany(p => p.Stays)
                 .HasForeignKey(s => s.PatientId)
                 .OnDelete(DeleteBehavior.NoAction);
             builder.HasIndex(s => s.CheckInDate)
                 .HasDatabaseName("IX_StayCheckInDate");
+
             builder.HasIndex(s => s.RoomNumber).HasFilter("(IsActive = 1)")
                 .HasDatabaseName("IX_StayRoomNumber");
+   
 
             builder.HasIndex(s => s.IsActive)
                 .HasDatabaseName("IX_StayIsActive");
+            builder.HasData(
+             new Stay
+             {
+                 Id = Guid.Parse("77777777-7777-7777-7777-777777777777"),
+                 PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                 RoomNumber = "101A",
+                 BedNumber = "B1",
+                 CheckInDate = new DateTime(2025, 09, 15, 10, 0, 0), // ثابتة
+                 Services = "Full care",
+                 TotalCost = 1500,
+                 IsActive = true,
+                 Notes = "Patient admitted for observation."
+                 // CheckOutDate = null (مسموح تسيبه كده لو العمود Nullable)
+             }
+         );
+
 
 
         }

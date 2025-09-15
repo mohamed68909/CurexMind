@@ -1,9 +1,11 @@
-﻿namespace ClincManagement.API.Errors
+﻿using ClincManagement.API.Abstractions;
+
+namespace ClincManagement.API.Errors
 {
     public record UserErrors
     {
         public static readonly Error DublicatedEmail =
-            new("Auth.DuplicatedEmail", "This email is already registered", StatusCodes.Status409Conflict);
+             new Error("Auth.DuplicatedEmail", "This email is already registered", StatusCodes.Status409Conflict);
         public static readonly Error InvalidCredentials =
             new("Auth.InvalidCredentials", "Invalid email or password", StatusCodes.Status401Unauthorized);
         public static readonly Error UserDisabled =

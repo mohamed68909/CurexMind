@@ -15,8 +15,7 @@
    
         public AppointmentType Type { get; set; } 
         public AppointmentStatus Status { get; set; }
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
-        public DateTime UpdatedDate { get; set; } = DateTime.Now;
+        public DateTime UpdatedDate { get; set; } 
         public Patient Patient { get; set; } = default!;
         public Doctor Doctor { get; set; }= default!;
         public Clinic Clinic { get; set; } = default!;

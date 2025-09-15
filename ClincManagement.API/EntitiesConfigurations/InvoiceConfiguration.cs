@@ -34,7 +34,7 @@
             builder.HasOne(i => i.Patient)
                 .WithMany(p => p.Invoice)
                 .HasForeignKey(i => i.PatientId)
-                .OnDelete(DeleteBehavior.NoAction); 
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasIndex(i => i.InvoiceDate)
                 .HasDatabaseName("IX_InvoiceDate");
@@ -44,6 +44,24 @@
 
             builder.HasIndex(i => i.PatientId)
                 .HasDatabaseName("IX_InvoicePatientId");
+            
+ builder.HasData(
+    new Invoice
+    {
+        Id = Guid.Parse("55555555-5555-5555-5555-555555555555"),
+        PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+        Amount = 500,
+        PaidAmount = 200,
+        RemainingAmount = 300,
+        InvoiceDate = new DateTime(2025, 09, 15),
+        Status = InvoiceStatus.Paid,
+        Notes = "Initial consultation",
+        CreatedDate = new DateTime(2025, 09, 15),
+        DueDate = new DateTime(2025, 10, 15)
+
+    }
+ );
+
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using ClincManagement.API.Abstractions.Consts;
+﻿
+using ClincManagement.API.Abstractions;
+using ClincManagement.API.Abstractions.Consts;
 using ClincManagement.API.Contracts.Authentications.Requests;
 using ClincManagement.API.Contracts.Authentications.Respones;
 using ClincManagement.API.Errors;
@@ -44,14 +46,14 @@ public class AuthService(
         if (!result.Succeeded)
         {
             var error = result.Errors.First();
-            return Result.Failure<AuthResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+            return Result.Failure<AuthResponse>(new Error(error.Code, error.Description));
         }
         var roleResult = await _userManager.AddToRoleAsync(user, DefaultRoles.Patient.Name);
 
         if (!roleResult.Succeeded)
         {
             var error = roleResult.Errors.First();
-            return Result.Failure<AuthResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+            return Result.Failure<AuthResponse>(new Error(error.Code, error.Description));
         }
 
         return Result.Success(await GetAuthResponse(user));

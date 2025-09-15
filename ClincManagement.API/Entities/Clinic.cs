@@ -7,7 +7,7 @@
         public string? Description { get; set; }
         public string? Location { get; set; }
          public bool? IsActive { get; set; }=true;
-        public DateTime CreatedDate { get; set; }=DateTime.Now;
+        public DateTime CreatedDate { get; set; }
         public ICollection<Appointment> Appointments { get; set; } = default!;
 
         public ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();

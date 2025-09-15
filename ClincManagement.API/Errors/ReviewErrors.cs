@@ -1,4 +1,6 @@
-﻿namespace ClincManagement.API.Errors
+﻿using ClincManagement.API.Abstractions;
+
+namespace ClincManagement.API.Errors
 {
     public static class ReviewErrors
     {

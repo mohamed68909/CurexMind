@@ -15,65 +15,27 @@ namespace ClincManagement.API.Controllers
         {
             _patientService = patientService;
         }
-        [HttpGet("{id:guid}")]
-        [ProducesResponseType(typeof(PatientResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-
-        public IActionResult Get()
+        [HttpGet("{patientId}/appointments")]
+        public async Task<IActionResult> GetAllAppointmentsByPatientIdAsync(Guid patientId)
         {
-            var id = HttpContext.GetRouteValue("id") as string;
-            if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out Guid patientId))
+            var result = await _patientService.GetAllAppointmentsByPatientIdAsync(patientId);
+            if (!result.IsSuccess)
             {
-                return BadRequest("Invalid patient ID.");
+                return BadRequest(result.Error);
             }
-            var patient = _patientService.GetPatientByIdAsync(patientId);
-            if (patient == null)
-            {
-                return NotFound();
-            }
-            return Ok(patient);
-        }
-        [HttpGet]
-        public async Task<IActionResult> GetPatients([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-        {
-            var patients = await _patientService.GetPatientsAsync(search, page, pageSize);
-            return Ok(patients);
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
         [HttpPost]
-        public async Task<IActionResult> CreatePatient([FromBody] PatientRequestDto request)
+        public async Task<IActionResult> CreatePatientAsync([FromBody] PatientRequestDto request)
         {
-            if (request == null)
-            {
-                return BadRequest("Invalid patient data.");
-            }
-            var createdPatient = await _patientService.CreatePatientAsync(request);
-            return CreatedAtAction(nameof(Get), new { id = createdPatient.PatientId}, createdPatient);
-        }
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> UpdatePatient(Guid id, [FromBody] PatientRequestDto request)
-        {
-            if (request == null)
-            {
-                return BadRequest("Invalid patient data.");
-            }
-            var updatedPatient = await _patientService.UpdatePatientAsync(id, request);
-            if (updatedPatient == null)
-            {
-                return NotFound();
-            }
-            return Ok(updatedPatient);
-        }
-        [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> DeletePatient(Guid id)
-        {
-            var result = await _patientService.DeletePatientAsync(id);
-            if (!result)
-            {
-                return NotFound();
-            }
-            return NoContent();
+            var result = await _patientService.CreatePatientAsync(request);
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
 
-        }
+
+
+
+
+    }
 }

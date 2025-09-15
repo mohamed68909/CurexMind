@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ClincManagement.API.Data.Migrationns
+namespace ClincManagement.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250911192827_SeedData")]
-    partial class SeedData
+    [Migration("20250915085055_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -175,63 +175,6 @@ namespace ClincManagement.API.Data.Migrationns
                             SecurityStamp = "admin-security-stamp",
                             TwoFactorEnabled = false,
                             UserName = "dev@mohamed.com"
-                        },
-                        new
-                        {
-                            Id = "user-1",
-                            AccessFailedCount = 0,
-                            Address = "Cairo, Egypt",
-                            ConcurrencyStamp = "doctor1-concurrency-stamp",
-                            Email = "doctor1@example.com",
-                            EmailConfirmed = true,
-                            FullName = "Doctor One",
-                            IsDisabled = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DOCTOR1@EXAMPLE.COM",
-                            NormalizedUserName = "DOCTOR1@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAENCRYPTED_PASSWORD_HASH",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "doctor1-security-stamp",
-                            TwoFactorEnabled = false,
-                            UserName = "doctor1@example.com"
-                        },
-                        new
-                        {
-                            Id = "user-2",
-                            AccessFailedCount = 0,
-                            Address = "Cairo, Egypt",
-                            ConcurrencyStamp = "doctor2-concurrency-stamp",
-                            Email = "doctor2@example.com",
-                            EmailConfirmed = true,
-                            FullName = "Doctor Two",
-                            IsDisabled = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DOCTOR2@EXAMPLE.COM",
-                            NormalizedUserName = "DOCTOR2@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAENCRYPTED_PASSWORD_HASH",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "doctor2-security-stamp",
-                            TwoFactorEnabled = false,
-                            UserName = "doctor2@example.com"
-                        },
-                        new
-                        {
-                            Id = "user-3",
-                            AccessFailedCount = 0,
-                            Address = "Cairo, Egypt",
-                            ConcurrencyStamp = "patient1-concurrency-stamp",
-                            Email = "patient1@example.com",
-                            EmailConfirmed = true,
-                            FullName = "Patient One",
-                            IsDisabled = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "PATIENT1@EXAMPLE.COM",
-                            NormalizedUserName = "PATIENT1@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAENCRYPTED_PASSWORD_HASH",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "patient1-security-stamp",
-                            TwoFactorEnabled = false,
-                            UserName = "patient1@example.com"
                         });
                 });
 
@@ -250,11 +193,6 @@ namespace ClincManagement.API.Data.Migrationns
 
                     b.Property<Guid>("ClinicId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getdate()");
 
                     b.Property<Guid>("DoctorId")
                         .HasColumnType("uniqueidentifier");
@@ -302,6 +240,23 @@ namespace ClincManagement.API.Data.Migrationns
                         .HasDatabaseName("IX_AppointmentStatus");
 
                     b.ToTable("Appointments");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
+                            AppointmentDate = new DateTime(2025, 9, 18, 10, 0, 0, 0, DateTimeKind.Unspecified),
+                            AppointmentTime = "10:00 AM",
+                            ClinicId = new Guid("33333333-3333-3333-3333-333333333333"),
+                            DoctorId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            Duration = 30,
+                            IsDeleted = false,
+                            Notes = "General check-up",
+                            PatientId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            Status = 1,
+                            Type = 1,
+                            UpdatedDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Clinic", b =>
@@ -348,21 +303,12 @@ namespace ClincManagement.API.Data.Migrationns
                     b.HasData(
                         new
                         {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            CreatedDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "General healthcare and diagnostics",
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            CreatedDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "This is the main clinic located in the city center.",
                             IsActive = true,
-                            Location = "Cairo",
-                            Name = "Future Clinic"
-                        },
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            CreatedDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Specialized in dental care",
-                            IsActive = true,
-                            Location = "Alexandria",
-                            Name = "Smile Dental Center"
+                            Location = "123 Main St, Cityville",
+                            Name = "Main Clinic"
                         });
                 });
 
@@ -384,6 +330,9 @@ namespace ClincManagement.API.Data.Migrationns
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int>("YearsOfExperience")
+                        .HasColumnType("int");
+
                     b.Property<string>("userId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -400,19 +349,12 @@ namespace ClincManagement.API.Data.Migrationns
                     b.HasData(
                         new
                         {
-                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            ClinicId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            FullName = "Dr. Ahmed Ali",
-                            Specialization = "Cardiology",
-                            userId = "user-1"
-                        },
-                        new
-                        {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
-                            ClinicId = new Guid("22222222-2222-2222-2222-222222222222"),
-                            FullName = "Dr. Sara Hassan",
-                            Specialization = "Dentistry",
-                            userId = "user-2"
+                            ClinicId = new Guid("33333333-3333-3333-3333-333333333333"),
+                            FullName = "Dr. John Smith",
+                            Specialization = "Cardiology",
+                            YearsOfExperience = 12,
+                            userId = "4E14506C-D3C0-4AE3-8616-5EB95A764358"
                         });
                 });
 
@@ -464,6 +406,21 @@ namespace ClincManagement.API.Data.Migrationns
                         .HasDatabaseName("IX_InvoiceStatus");
 
                     b.ToTable("Invoices");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("55555555-5555-5555-5555-555555555555"),
+                            Amount = 500m,
+                            CreatedDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DueDate = new DateTime(2025, 10, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            InvoiceDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Notes = "Initial consultation",
+                            PaidAmount = 200m,
+                            PatientId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RemainingAmount = 300m,
+                            Status = 1
+                        });
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Operation", b =>
@@ -507,6 +464,19 @@ namespace ClincManagement.API.Data.Migrationns
                         .HasDatabaseName("IX_OperationSurgeonId");
 
                     b.ToTable("Operations");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("66666666-6666-6666-6666-666666666666"),
+                            Cost = 20000m,
+                            Date = new DateTime(2025, 10, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Name = "Heart Surgery",
+                            Notes = "Critical operation",
+                            PatientId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            SurgeonId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            Tools = "Scalpel, Monitor"
+                        });
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Patient", b =>
@@ -563,17 +533,17 @@ namespace ClincManagement.API.Data.Migrationns
                     b.HasData(
                         new
                         {
-                            PatientId = new Guid("55555555-5555-5555-5555-555555555555"),
-                            CreatedDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            PatientId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            CreatedDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             DateOfBirth = new DateTime(1998, 5, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Gender = 1,
                             IsActive = true,
                             NationalId = "29812345678901",
-                            Notes = "Heart condition",
-                            ProfileImageUrl = "",
+                            Notes = "First patient note",
+                            ProfileImageUrl = "/images/patient1.png",
                             SocialStatus = 1,
-                            UpdatedDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            UserId = "user-3"
+                            UpdatedDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358"
                         });
                 });
 
@@ -618,12 +588,12 @@ namespace ClincManagement.API.Data.Migrationns
                     b.HasData(
                         new
                         {
-                            Id = new Guid("77777777-7777-7777-7777-777777777777"),
-                            ClinicId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            Comment = "Excellent doctor!",
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DoctorId = new Guid("33333333-3333-3333-3333-333333333333"),
-                            PatientId = new Guid("55555555-5555-5555-5555-555555555555"),
+                            Id = new Guid("88888888-8888-8888-8888-888888888888"),
+                            ClinicId = new Guid("33333333-3333-3333-3333-333333333333"),
+                            Comment = "Excellent service!",
+                            CreatedAt = new DateTime(2025, 9, 15, 10, 0, 0, 0, DateTimeKind.Utc),
+                            DoctorId = new Guid("44444444-4444-4444-4444-444444444444"),
+                            PatientId = new Guid("11111111-1111-1111-1111-111111111111"),
                             Rating = 5
                         });
                 });
@@ -642,7 +612,7 @@ namespace ClincManagement.API.Data.Migrationns
                     b.Property<DateTime>("CheckInDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("CheckOutDate")
+                    b.Property<DateTime?>("CheckOutDate")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
@@ -680,62 +650,20 @@ namespace ClincManagement.API.Data.Migrationns
                         .HasFilter("(IsActive = 1)");
 
                     b.ToTable("Stays");
-                });
 
-            modelBuilder.Entity("ClincManagement.API.Entities.VitalSigns", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWID()");
-
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int?>("BloodPressureDiastolic")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("BloodPressureSystolic")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("HeartRate")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("PatientId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("RecordedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("RecordedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<decimal?>("Temperature")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<decimal?>("Weight")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("PatientId")
-                        .HasDatabaseName("IX_VitalSigns_PatientId");
-
-                    SqlServerIndexBuilderExtensions.SortInTempDb(b.HasIndex("PatientId"), true);
-
-                    b.HasIndex("RecordedBy");
-
-                    b.HasIndex("RecordedDate")
-                        .HasDatabaseName("IX_VitalSigns_RecordedDate");
-
-                    b.ToTable("VitalSigns", (string)null);
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("77777777-7777-7777-7777-777777777777"),
+                            BedNumber = "B1",
+                            CheckInDate = new DateTime(2025, 9, 15, 10, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Notes = "Patient admitted for observation.",
+                            PatientId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomNumber = "101A",
+                            Services = "Full care",
+                            TotalCost = 1500m
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1011,29 +939,6 @@ namespace ClincManagement.API.Data.Migrationns
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("ClincManagement.API.Entities.VitalSigns", b =>
-                {
-                    b.HasOne("ClincManagement.API.Entities.ApplicationUser", null)
-                        .WithMany("VitalSigns")
-                        .HasForeignKey("ApplicationUserId");
-
-                    b.HasOne("ClincManagement.API.Entities.Patient", "Patient")
-                        .WithMany("VitalSigns")
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ClincManagement.API.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("RecordedBy")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Patient");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("ClincManagement.API.Entities.ApplicationRole", null)
@@ -1092,8 +997,6 @@ namespace ClincManagement.API.Data.Migrationns
 
                     b.Navigation("Patient")
                         .IsRequired();
-
-                    b.Navigation("VitalSigns");
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Clinic", b =>
@@ -1125,8 +1028,6 @@ namespace ClincManagement.API.Data.Migrationns
                     b.Navigation("Reviews");
 
                     b.Navigation("Stays");
-
-                    b.Navigation("VitalSigns");
                 });
 #pragma warning restore 612, 618
         }

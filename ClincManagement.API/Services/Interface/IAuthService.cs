@@ -1,4 +1,5 @@
-﻿using ClincManagement.API.Contracts.Authentications.Requests;
+﻿using ClincManagement.API.Abstractions;
+using ClincManagement.API.Contracts.Authentications.Requests;
 using ClincManagement.API.Contracts.Authentications.Respones;
 using Google.Apis.Auth.OAuth2.Requests;
 

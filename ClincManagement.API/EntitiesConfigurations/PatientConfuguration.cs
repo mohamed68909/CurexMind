@@ -21,6 +21,22 @@ namespace ClincManagement.API.EntitiesConfigurations
 
             builder.HasIndex(n => n.NationalId)
                 .IsUnique();
+            builder.HasData(
+   new Patient
+   {
+       PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+       NationalId = "29812345678901",
+       Gender = Gender.Male,
+       Notes = "First patient note",
+       DateOfBirth = new DateTime(1998, 5, 20),
+       ProfileImageUrl = "/images/patient1.png",
+       CreatedDate = new DateTime(2025, 09, 15), // ثابت
+       UpdatedDate = new DateTime(2025, 09, 15), // ثابت
+       IsActive = true,
+       SocialStatus = SocialStatus.Single,
+       UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358"
+   }
+   );
 
         }
     }

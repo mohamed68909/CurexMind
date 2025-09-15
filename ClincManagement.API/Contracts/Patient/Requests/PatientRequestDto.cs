@@ -15,10 +15,10 @@ namespace ClincManagement.API.Contracts.Patient.Requests
 
         SocialStatus? SocialStatus,
 
-        [Required, Phone(ErrorMessage = "Invalid phone number format.")]
+  
         string PhoneNumber,
 
-        [EmailAddress(ErrorMessage = "Invalid email address format.")]
+        
         string? Email,
 
         [MaxLength(50)]
