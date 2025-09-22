@@ -10,10 +10,10 @@
         public DateTime CreatedDate { get; set; }
         public ICollection<Appointment> Appointments { get; set; } = default!;
 
-        public ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
+        public ICollection<Doctor> Doctors { get; set; } = default!;
 
-      
-        public ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+        public ICollection<Review> Reviews { get; set; } = default!;
 
 
 

@@ -4,38 +4,41 @@ namespace ClincManagement.API.Contracts.Patient.Requests
 {
     public record PatientRequestDto
     (
-        [Required, MaxLength(255)]
+
         string FullName,
+        string UserName,
 
-        [Required]
-        Gender Gender, 
+        Gender Gender,
 
-        [Required]
+
         DateTime DateOfBirth,
 
         SocialStatus? SocialStatus,
+        
+        IFormFile? ProfileImageUrl,
 
-  
         string PhoneNumber,
 
-        
+
         string? Email,
 
-        [MaxLength(50)]
+
         string? NationalId,
 
-        [MaxLength(500)]
         string? Address,
 
         string? Notes,
 
         InitialBooking? InitialBooking
-    );
+    )
+    {
+
+    };
 
     public record InitialBooking
     (
-        Guid? ClinicId,
-        Guid? DoctorId,
+        Guid ClinicId,
+        Guid DoctorId,
         AppointmentType? AppointmentType,
         DateTime? AppointmentDate,
         string? Notes

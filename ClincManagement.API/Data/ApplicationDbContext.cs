@@ -9,11 +9,11 @@ namespace ClincManagement.API.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-       
-           
-        
 
-        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+
+
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
         public DbSet<Doctor> Doctors => Set<Doctor>();
         public DbSet<Patient> Patients => Set<Patient>();
@@ -24,6 +24,7 @@ namespace ClincManagement.API.Data
         public DbSet<Clinic> Clinics => Set<Clinic>();
  
         public DbSet<Review> Reviews => Set<Review>();
+        public DbSet<Payment> Payments => Set<Payment>();
 
 
 

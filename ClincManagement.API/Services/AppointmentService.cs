@@ -1,6 +1,11 @@
-﻿using ClincManagement.API.Contracts.Appinments.Requests;
+﻿using ClincManagement.API.Abstractions;
+using ClincManagement.API.Contracts.Appinments.Requests;
 using ClincManagement.API.Contracts.Appinments.Respones;
+using ClincManagement.API.Errors;
+using ClincManagement.API.Errors.ClincManagement.API.Errors;
 using ClincManagement.API.Services.Interface;
+using Mapster;
+using System.Threading;
 
 namespace ClincManagement.API.Services
 {
@@ -11,105 +16,171 @@ namespace ClincManagement.API.Services
         {
             _context = context;
         }
-
-        public Task<PagedAppointmentResponse> CreateAppointmentAsync(CreateRequestAppointment request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<bool> DeleteAppointmentAsync(Guid appointmentId)
-        {
-
-            // logic to delete appointment by Id
-            if (appointmentId == Guid.Empty)
-            {
-                throw new ArgumentException("Appointment ID cannot be empty.", nameof(appointmentId));
-            }
-            var appointment =  _context.Appointments.FirstOrDefault(a => a.Id == appointmentId);
-            if (appointment == null)
-            {
-                throw new KeyNotFoundException($"Appointment with ID {appointmentId} not found.");
-            }
-            if (appointment.IsDeleted == true)
-            {
-                throw new InvalidOperationException($"Appointment with ID {appointmentId} is already deleted.");
-            }
-            appointment.IsDeleted = true; // Soft delete
-            _context.Appointments.Update(appointment);
-            await _context.SaveChangesAsync();
-            return true;
-
-        }
-
-        public async Task<PagedAppointmentResponse> GetAllAppointmentsAsync()
+        public async Task<Result<AppointmentDto>> CreateAppointmentAsync(CreateAppointmentDto request, CancellationToken cancel)
         {
             
-            var appointments = await _context.Appointments
-                .Where(a => a.IsDeleted== false)
-                .Select(a => new ResponseDetailsAppointment(
-                    a.Id,
-                    a.Patient.User.FullName,
-                    a.Doctor.User.FullName,
-                    a.Clinic.Name,
-                    a.AppointmentDate,
-                    a.AppointmentTime,
-                    a.Type,
-                    a.Status))
-                .ToListAsync();
-            return await Task.FromResult(new PagedAppointmentResponse(appointments, appointments.Count, 1, appointments.Count, 1));
+            var patientExists = await _context.Patients.AnyAsync(p => p.PatientId == request.PatientId, cancel);
+            if (!patientExists)
+                return Result.Failure<AppointmentDto>(AppointmentErrors.InvalidPatient);
 
+            
+            var doctorExists = await _context.Doctors.AnyAsync(d => d.Id == request.DoctorId, cancel);
+            if (!doctorExists)
+                return Result.Failure<AppointmentDto>(AppointmentErrors.InvalidDoctor);
+
+            
+            if (request.Date < DateTime.UtcNow)
+                return Result.Failure<AppointmentDto>(AppointmentErrors.InvalidDate);
+
+            
+            var isConflict = await _context.Appointments.AnyAsync(a =>
+                a.DoctorId == request.DoctorId &&
+                a.AppointmentDate == request.Date &&
+                a.AppointmentTime == request.Time &&
+                a.IsDeleted == false, cancel);
+
+            if (isConflict)
+                return Result.Failure<AppointmentDto>(AppointmentErrors.AlreadyExists);
+
+            try
+            {
+                
+                var appointment = request.Adapt<Appointment>();
+                appointment.Id = Guid.CreateVersion7();
+                appointment.UpdatedDate = DateTime.UtcNow;
+                appointment.IsDeleted = false;
+
+                _context.Appointments.Add(appointment);
+                await _context.SaveChangesAsync(cancel);
+
+               
+                var dto = appointment.Adapt<AppointmentDto>();
+                return Result.Success(dto);
+            }
+            catch
+            {
+                return Result.Failure<AppointmentDto>(AppointmentErrors.CreationFailed);
+            }
         }
 
-        public async Task<PagedAppointmentResponse> GetAppointmentByIdAsync(Guid appointmentId)
+
+        public async Task<Result> DeleteAppointmentAsync(Guid appointmentId, CancellationToken cancel)
         {
-            if (appointmentId == Guid.Empty)
-            {
-                throw new ArgumentException("Appointment ID cannot be empty.", nameof(appointmentId));
-            }
             var appointment = await _context.Appointments
-                .Where(a => a.Id == appointmentId && a.IsDeleted == false)
-                .Select(a => new ResponseDetailsAppointment(
-                    a.Id,
-                    a.Patient.User.FullName,
-                    a.Doctor.User.FullName,
-                    a.Clinic.Name,
-                    a.AppointmentDate,
-                    a.AppointmentTime,
-                    a.Type,
-                    a.Status))
-                .FirstOrDefaultAsync();
-            if (appointment == null)
-            {
-                throw new KeyNotFoundException($"Appointment with ID {appointmentId} not found.");
-            }
-            return new PagedAppointmentResponse(new List<ResponseDetailsAppointment> { appointment }, 1, 1, 1, 1);
+                .FirstOrDefaultAsync(a => a.Id == appointmentId, cancel);
 
+            if (appointment is null)
+                return Result.Failure(AppointmentErrors.NotFound);
 
-        }
+            
+            appointment.IsDeleted = true;
+            appointment.UpdatedDate = DateTime.UtcNow; 
 
-        public async Task<PagedAppointmentResponse> UpdateAppointmentAsync(Guid appointmentId, CreateRequestAppointment request)
-        {
-            if (appointmentId == Guid.Empty)
-            {
-                throw new ArgumentException("Appointment ID cannot be empty.", nameof(appointmentId));
-            }
-            var appointment = await _context.Appointments.FirstOrDefaultAsync(a => a.Id == appointmentId && a.IsDeleted == false);
-            if (appointment == null)
-            {
-                throw new KeyNotFoundException($"Appointment with ID {appointmentId} not found.");
-            }
-            appointment.PatientId = request.PatientId;
-            appointment.DoctorId = request.DoctorId;
-            appointment.ClinicId = request.ClinicId;
-            appointment.AppointmentDate = request.AppointmentDate;
-            appointment.AppointmentTime = request.AppointmentTime;
-            appointment.Duration = request.Duration;
-            appointment.Type = request.appointmentType;
-            appointment.Status = request.status ?? AppointmentStatus.Confirmed; 
             _context.Appointments.Update(appointment);
-            await _context.SaveChangesAsync();
-            return await GetAppointmentByIdAsync(appointment.Id);
+            await _context.SaveChangesAsync(cancel);
 
+            return Result.Success();
         }
+
+
+    
+
+        public async Task<Result> UpdateAppointmentAsync(UpdateAppointmentDto request, CancellationToken cancel)
+        {
+          
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.Id == request.AppointmentId && a.IsDeleted == false, cancel);
+
+            if (appointment is null)
+                return Result.Failure(AppointmentErrors.NotFound);
+
+        
+            var patientExists = await _context.Patients.AnyAsync(p => p.PatientId == request.PatientId, cancel);
+            if (!patientExists)
+                return Result.Failure(AppointmentErrors.InvalidPatient);
+
+          
+            var doctorExists = await _context.Doctors.AnyAsync(d => d.Id == request.DoctorId, cancel);
+            if (!doctorExists)
+                return Result.Failure(AppointmentErrors.InvalidDoctor);
+
+       
+            if (request.Date < DateTime.UtcNow)
+                return Result.Failure(AppointmentErrors.InvalidDate);
+
+           
+            var isConflict = await _context.Appointments.AnyAsync(a =>
+                a.Id != request.PatientId &&
+                a.DoctorId == request.DoctorId &&
+                a.AppointmentDate == request.Date &&
+                a.AppointmentTime == request.Time &&
+                a.IsDeleted == false, cancel);
+
+            if (isConflict)
+                return Result.Failure(AppointmentErrors.AlreadyExists);
+
+            try
+            {
+                
+                appointment.PatientId = request.PatientId;
+                appointment.DoctorId = request.DoctorId;
+                appointment.ClinicId = request.ClinicId;
+                appointment.AppointmentDate = request.Date;
+                appointment.AppointmentTime = request.Time;
+                appointment.Notes = request.Notes;
+                appointment.Duration = request.DurationMinutes;
+                appointment.Type = request.AppointmentType;
+                appointment.Status = request.Status.GetValueOrDefault();
+                appointment.UpdatedDate = DateTime.UtcNow;
+
+                _context.Appointments.Update(appointment);
+                await _context.SaveChangesAsync(cancel);
+
+                return Result.Success();
+            }
+            catch
+            {
+                return Result.Failure(AppointmentErrors.UpdateFailed);
+            }
+        }
+
+      public async Task<Result<PagedAppointmentResponse>> GetAllAppointmentsAsync( int page, int pageSize, CancellationToken cancel)
+{
+   
+    var query = _context.Appointments
+        .Where(a => a.IsDeleted == false)
+        .Include(a => a.Patient)
+        .Include(a => a.Doctor)
+        .Include(a => a.Clinic);
+
+
+    var totalCount = await query.CountAsync(cancel);
+
+    if (totalCount == 0)
+        return Result.Failure<PagedAppointmentResponse>(AppointmentErrors.NotFound);
+
+    
+    var appointments = await query
+        .OrderBy(a => a.AppointmentDate)
+        .ThenBy(a => a.AppointmentTime)
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync(cancel);
+
+  
+    var data = appointments.Adapt<IEnumerable<ResponseDetailsAppointment>>();
+
+    
+    var response = new PagedAppointmentResponse(
+        Data: data,
+        TotalCount: totalCount,
+        Page: page,
+        PageSize: pageSize,
+        TotalPages: (int)Math.Ceiling(totalCount / (double)pageSize)
+    );
+
+    return Result.Success(response);
+}
+
     }
 }

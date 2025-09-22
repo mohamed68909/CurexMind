@@ -20,7 +20,7 @@ namespace ClincManagement.API.EntitiesConfigurations
                 .HasMaxLength(500)
                 .IsRequired(false);
           
-            builder.Property(a => a.UpdatedDate).HasDefaultValueSql("getdate()").IsRequired();
+            builder.Property(a => a.UpdatedDate).IsRequired();
             builder.Property(a => a.Duration)
                 .IsRequired()
                 .HasDefaultValue(30); 
@@ -51,14 +51,18 @@ namespace ClincManagement.API.EntitiesConfigurations
                  Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
                  PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                  DoctorId = Guid.Parse("44444444-4444-4444-4444-444444444444"),
-                 AppointmentDate = new DateTime(2025, 09, 18, 10, 0, 0), 
+                 AppointmentDate = new DateTime(2025, 09, 18),
                  Status = AppointmentStatus.Confirmed,
                  Notes = "General check-up",
                  Type = AppointmentType.First_Visit,
                  ClinicId = Guid.Parse("33333333-3333-3333-3333-333333333333"),
                  AppointmentTime = "10:00 AM",
                  Duration = 30,
-                 UpdatedDate = new DateTime(2025, 09, 15)
+                 UpdatedDate = new DateTime(2025, 09, 15),
+
+                 IsDeleted = false
+                 ,
+                 CreatedById = "system",
 
 
 

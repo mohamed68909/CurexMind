@@ -36,7 +36,7 @@ public class AuthService(
             .AnyAsync(u => u.Email == request.Email, cancellationToken);
 
         if (emailIsExists)
-            return Result.Failure<AuthResponse>(UserErrors.DublicatedEmail);
+            return Result.Failure<AuthResponse>(UserErrors.DuplicatedEmail);
 
         var user = request.Adapt<ApplicationUser>();
         user.UserName = _userHelpers.GetUserName(request.Email);

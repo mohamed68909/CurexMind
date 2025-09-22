@@ -1,16 +1,16 @@
 ﻿namespace ClincManagement.API.Contracts.Appinments.Requests
 {
-    public record CreateRequestAppointment
-    (
-        Guid PatientId,
-        Guid DoctorId,
-        Guid ClinicId,
-      DateTime AppointmentDate,
-     string AppointmentTime,
-     int Duration,
-     AppointmentType appointmentType,
-        AppointmentStatus? status,
-        string? notes
 
-    );
+    public class CreateAppointmentDto
+    {
+        public Guid PatientId { get; set; }
+        public Guid DoctorId { get; set; }
+        public Guid ClinicId { get; set; }
+        public AppointmentType AppointmentType { get; set; }
+        public AppointmentStatus? Status { get; set; }
+        public DateTime Date { get; set; }
+        public string Time { get; set; }
+        public int DurationMinutes { get; set; }
+        public string? Notes { get; set; }
+    }
 }

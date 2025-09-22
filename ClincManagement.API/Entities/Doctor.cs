@@ -1,12 +1,15 @@
-﻿namespace ClincManagement.API.Entities
+﻿using ClincManagement.API.Settings;
+
+namespace ClincManagement.API.Entities
 {
-    public sealed class Doctor
+    public sealed class Doctor : Auditable
     {
         public Guid Id { get; set; } = Guid.CreateVersion7();
         public string Specialization { get; set; } = string.Empty;
         public string userId { get; set; } = string.Empty;
         public int YearsOfExperience { get; set; }
-        public string[] languages { get; set; } = Array.Empty<string>();
+
+        public string Languages { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public Guid ClinicId { get; set; }
         public Clinic Clinic { get; set; } = default!;

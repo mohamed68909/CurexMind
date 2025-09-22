@@ -11,10 +11,18 @@ namespace ClincManagement.API.EntityCognfigfigui
             builder.Property(u => u.FullName)
                 .IsRequired()
                 .HasMaxLength(100);
-            builder.Property(u => u.Address)
-                .IsRequired()
-                .HasMaxLength(100);
 
+
+          
+            builder.OwnsOne(d => d.ProfileImageUrl, img =>
+            {
+                img.ToTable("DoctorProfileImages");
+                img.WithOwner().HasForeignKey("DoctorId");
+                img.Property(x => x.FileName).HasMaxLength(250);
+                img.Property(x => x.StoredFileName).HasMaxLength(250);
+                img.Property(x => x.FileExtension).HasMaxLength(10);
+                img.Property(x => x.ContentType).HasMaxLength(50);
+            });
 
             builder.HasData(
                 new ApplicationUser
@@ -29,7 +37,7 @@ namespace ClincManagement.API.EntityCognfigfigui
                     EmailConfirmed = true,
                     SecurityStamp = "admin-security-stamp",
                     ConcurrencyStamp = "admin-concurrency-stamp",
-                    Address = "Cairo, Egypt",
+                  
                     PhoneNumber = "01234567890",
                     PhoneNumberConfirmed = true
                 }

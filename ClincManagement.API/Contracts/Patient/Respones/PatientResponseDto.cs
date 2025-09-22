@@ -14,16 +14,10 @@
         string? Address,
         string? Notes,
         string? ProfileImageUrl,
-       // VitalSignsDto? VitalSigns,
+    
         DateTime CreatedDate
     );
 
-    //public record VitalSignsDto
-    //(
-    //    string? BloodPressure,
-    //    int? HeartRate,
-    //    double? Temperature,
-    //    double? Weight
-    //);
+  
 
 }

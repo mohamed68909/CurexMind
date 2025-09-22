@@ -4,8 +4,7 @@
     {
        
         public string FullName { get; set; }
-     
-        public string Address { get; set; }
+        public UploadedFile? ProfileImageUrl { get; set; }
         public Doctor Doctor { get; set; } = default!;
         public Patient Patient { get; set; } = default!;
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();

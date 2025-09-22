@@ -16,8 +16,11 @@ namespace ClincManagement.API.EntitiesConfigurations
             builder.HasOne(n => n.User)
                 .WithOne(u => u.Patient)
                 .HasForeignKey<Patient>(n => n.UserId);
+            builder.Property(u => u.Address)
+                .IsRequired()
+                .HasMaxLength(300);
+     
 
-           
 
             builder.HasIndex(n => n.NationalId)
                 .IsUnique();
@@ -29,12 +32,13 @@ namespace ClincManagement.API.EntitiesConfigurations
        Gender = Gender.Male,
        Notes = "First patient note",
        DateOfBirth = new DateTime(1998, 5, 20),
-       ProfileImageUrl = "/images/patient1.png",
-       CreatedDate = new DateTime(2025, 09, 15), // ثابت
-       UpdatedDate = new DateTime(2025, 09, 15), // ثابت
-       IsActive = true,
+      
+       CreatedDate = new DateTime(2025, 09, 15), 
+       UpdatedDate = new DateTime(2025, 09, 15),
+ 
        SocialStatus = SocialStatus.Single,
-       UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358"
+       UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
+       CreatedById = "system",
    }
    );
 

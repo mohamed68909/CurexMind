@@ -1,6 +1,8 @@
-﻿namespace ClincManagement.API.Entities
+﻿using ClincManagement.API.Settings;
+
+namespace ClincManagement.API.Entities
 {
-    public class Appointment
+    public class Appointment : Auditable
     {
         public Guid Id { get; set; } = Guid.CreateVersion7();
         public Guid PatientId {  get; set; }
@@ -10,7 +12,7 @@
         public string AppointmentTime { get; set; } = string.Empty;
         public string?  Notes { get; set; }
         public int Duration { get; set; } 
-        public bool ? IsDeleted { get; set; } = false;
+       
 
    
         public AppointmentType Type { get; set; } 
@@ -19,6 +21,10 @@
         public Patient Patient { get; set; } = default!;
         public Doctor Doctor { get; set; }= default!;
         public Clinic Clinic { get; set; } = default!;
+        public Payment? Payment { get; set; }
+
+
+
 
 
 

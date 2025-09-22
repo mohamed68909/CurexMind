@@ -1,4 +1,5 @@
 ﻿
+using ClincManagement.API.Abstractions;
 using ClincManagement.API.Contracts.Appinments.Requests;
 using ClincManagement.API.Contracts.Appinments.Respones;
 
@@ -7,10 +8,18 @@ namespace ClincManagement.API.Services.Interface
 {
     public interface IAppointmentService
     {
-        Task<PagedAppointmentResponse> GetAppointmentByIdAsync(Guid appointmentId);
-        Task<PagedAppointmentResponse> GetAllAppointmentsAsync();
-        Task<PagedAppointmentResponse> CreateAppointmentAsync(CreateRequestAppointment request);
-        Task<PagedAppointmentResponse> UpdateAppointmentAsync(Guid appointmentId, CreateRequestAppointment request);
-        Task<bool> DeleteAppointmentAsync(Guid appointmentId);
-     }
+
+        Task<Result<PagedAppointmentResponse>> GetAllAppointmentsAsync(int page, int pageSize, CancellationToken cancel);
+
+        //Task<AppointmentDto?> GetAppointmentByIdAsync(Guid appointmentId, CancellationToken cancel);
+
+
+        Task<Result<AppointmentDto>> CreateAppointmentAsync(CreateAppointmentDto request, CancellationToken cancel);
+
+    
+        Task<Result> UpdateAppointmentAsync(UpdateAppointmentDto request, CancellationToken cancel);
+
+        
+        Task<Result> DeleteAppointmentAsync(Guid appointmentId, CancellationToken cancel);
+    }
 }

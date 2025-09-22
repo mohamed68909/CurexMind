@@ -4,24 +4,22 @@ namespace ClincManagement.API.Contracts.Appinments.Respones
 {
     public record ResponseDetailsAppointment
     (
-       Guid AppointmentId,
-       string patientName,
-         string doctorName,
-         string clinic,
-            DateTime appointmentDate,
-            string appointmentTime,
-            AppointmentType appointmentType,
-            AppointmentStatus status 
-        
+        Guid AppointmentId,
+        string PatientName,
+        string DoctorName,
+        string Clinic,
+        DateTime AppointmentDate,
+        string AppointmentTime,
+        AppointmentType AppointmentType,
+        AppointmentStatus Status
+    );
 
-
-        );
     public record PagedAppointmentResponse
-(
-    IEnumerable<ResponseDetailsAppointment> Data,
-    int TotalCount,
-    int Page,
-    int PageSize,
-    int TotalPages
-);
+    (
+        IEnumerable<ResponseDetailsAppointment> Data,
+        int TotalCount,
+        int Page,
+        int PageSize,
+        int TotalPages
+    );
 }
