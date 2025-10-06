@@ -24,6 +24,7 @@ namespace ClincManagement.API.Entities
         public ApplicationUser User { get; set; } = default!;
         public ICollection<Appointment> Appointments { get; set; } = default!;
         public ICollection<Invoice> Invoice { get; set; } = default!;
+        public ICollection <Patient > Patients { get; set; } = default!;
 
         public ICollection<Stay> Stays { get; set; } = default!;
         public ICollection<Operation> Operations { get; set; } = default!;

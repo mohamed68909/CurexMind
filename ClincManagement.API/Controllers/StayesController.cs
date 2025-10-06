@@ -8,11 +8,11 @@ namespace ClincManagement.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StayController : ControllerBase
+    public class StayesController : ControllerBase
     {
         private readonly IStayService _stayService;
 
-        public StayController(IStayService stayService)
+        public StayesController(IStayService stayService)
         {
             _stayService = stayService;
         }
