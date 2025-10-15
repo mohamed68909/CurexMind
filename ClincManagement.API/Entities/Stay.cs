@@ -18,6 +18,8 @@ namespace ClincManagement.API.Entities
 
         public string? Notes { get; set; } 
         public Patient Patient { get; set; } = default!;
+        public ICollection<MedicalService> MedicalServices { get; set; } = new List<MedicalService>();
+
 
 
     }

@@ -25,6 +25,8 @@ namespace ClincManagement.API.Data
  
         public DbSet<Review> Reviews => Set<Review>();
         public DbSet<Payment> Payments => Set<Payment>();
+        public DbSet<StayActivity> StayActivities => Set<StayActivity>();
+        public DbSet<MedicalService> MedicalServices => Set<MedicalService>();
 
 
 

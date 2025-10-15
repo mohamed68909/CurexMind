@@ -100,6 +100,7 @@ namespace ClincManagement.API.Extentions
             services.AddScoped<IJwtProvider, JwtProvider>();
             services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IUserHelpers, UserHelpers>();
+            services.AddScoped<IStayService, StayService>();
 
             return services;
         }

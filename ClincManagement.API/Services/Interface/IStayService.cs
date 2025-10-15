@@ -1,4 +1,4 @@
-﻿// في مجلد يسمى "Services/Interfaces" أو "Contracts/Services"
+﻿
 
 using System;
 using System.Collections.Generic;

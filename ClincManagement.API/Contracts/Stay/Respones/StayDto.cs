@@ -13,6 +13,7 @@
         public DateTime CheckInDate { get; set; }
         public DateTime? CheckOutDate { get; set; }
         public string? Notes { get; set; }
+        public StayServices? Services { get; set; }
         public List<ActivityLogDto> ActivityLog { get; set; } = new List<ActivityLogDto>();
     }
     public class PagedStayResponse

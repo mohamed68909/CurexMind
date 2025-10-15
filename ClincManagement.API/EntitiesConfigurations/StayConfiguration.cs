@@ -8,10 +8,10 @@ namespace ClincManagement.API.EntitiesConfigurations
     {
         public void Configure(EntityTypeBuilder<Stay> builder)
         {
-            // Primary Key
+           
             builder.HasKey(s => s.Id);
 
-            // Configure Properties
+          
             builder.Property(s => s.PatientId).IsRequired();
             builder.Property(s => s.RoomNumber).IsRequired().HasMaxLength(20);
             builder.Property(s => s.BedNumber).IsRequired().HasMaxLength(10);
@@ -30,7 +30,7 @@ namespace ClincManagement.API.EntitiesConfigurations
                 .HasForeignKey(s => s.PatientId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Configure Indices for performance
+            
             builder.HasIndex(s => s.CheckInDate).HasDatabaseName("IX_StayCheckInDate");
             builder.HasIndex(s => s.RoomNumber).HasDatabaseName("IX_StayRoomNumber");
 
