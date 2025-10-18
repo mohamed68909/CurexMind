@@ -1,5 +1,4 @@
-﻿
-using ClincManagement.API.Abstractions.Consts;
+﻿using ClincManagement.API.Abstractions.Consts;
 
 namespace ClincManagement.API.EntitiesConfigurations
 {

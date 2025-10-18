@@ -3,7 +3,7 @@
     public record PatientCreateResponseDto
    (
         Guid PatientId,
-        
+
         string message = "Patient created successfully."
 
 

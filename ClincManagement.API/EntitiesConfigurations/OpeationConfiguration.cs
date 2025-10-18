@@ -21,12 +21,12 @@
             builder.HasOne(o => o.Patient)
                 .WithMany(p => p.Operations)
                 .HasForeignKey(o => o.PatientId)
-                .OnDelete(DeleteBehavior.NoAction); 
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(o => o.Doctor)
                 .WithMany(d => d.Operations)
                 .HasForeignKey(o => o.SurgeonId)
-                .OnDelete(DeleteBehavior.NoAction); 
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasIndex(o => o.Date)
                 .HasDatabaseName("IX_OperationDate");
@@ -41,9 +41,9 @@
                 {
                     Id = Guid.Parse("66666666-6666-6666-6666-666666666666"),
                     PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    SurgeonId = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                    SurgeonId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
                     Name = "Heart Surgery",
-                    Date = new DateTime(2025, 10, 15), 
+                    Date = new DateTime(2025, 10, 15),
                     Tools = "Scalpel, Monitor",
                     Cost = 20000,
                     Notes = "Critical operation"

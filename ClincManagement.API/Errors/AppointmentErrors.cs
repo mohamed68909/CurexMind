@@ -4,7 +4,7 @@ namespace ClincManagement.API.Errors
 {
     namespace ClincManagement.API.Errors
     {
-        
+
 
         public static class AppointmentErrors
         {

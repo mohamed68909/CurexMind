@@ -6,13 +6,13 @@
         public string FullName { get; init; } = string.Empty;
         public string Specialization { get; init; } = string.Empty;
         public string ClinicName { get; init; } = string.Empty;
-       public  IFormFile? ProfileImageUrl { get; init; } = null;
+        public IFormFile? ProfileImageUrl { get; init; } = null;
         public decimal Price { get; init; }
         public double Rating { get; init; }
         public int ReviewsCount { get; init; }
-       
+
         public DateTime NextAvailable { get; init; }
 
-}
+    }
 
 }

@@ -5,7 +5,7 @@
         Guid PatientId,
         string FullName,
         Gender Gender,
-  
+
         int Age,
         SocialStatus? SocialStatus,
         string PhoneNumber,
@@ -14,10 +14,10 @@
         string? Address,
         string? Notes,
         string? ProfileImageUrl,
-    
+
         DateTime CreatedDate
     );
 
-  
+
 
 }

@@ -7,9 +7,9 @@
         public Guid SurgeonId { get; set; }
         public string Name { get; set; } = string.Empty;
         public DateTime Date { get; set; }
-        public string Tools { get; set; }  = string .Empty;
+        public string Tools { get; set; } = string.Empty;
         public decimal Cost { get; set; }
-        public string? Notes {  get; set; }
+        public string? Notes { get; set; }
         public Patient Patient { get; set; } = default!;
         public Doctor Doctor { get; set; } = default!;
 

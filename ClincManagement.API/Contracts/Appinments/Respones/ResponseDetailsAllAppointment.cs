@@ -1,8 +1,6 @@
-﻿using ClincManagement.API.Contracts.Patient.Responses;
-
-namespace ClincManagement.API.Contracts.Appinments.Respones
+﻿namespace ClincManagement.API.Contracts.Appinments.Respones
 {
-    public record ResponseDetailsAppointment
+    public record ResponseDetailsAllAppointment
     (
         Guid AppointmentId,
         string PatientName,
@@ -16,7 +14,7 @@ namespace ClincManagement.API.Contracts.Appinments.Respones
 
     public record PagedAppointmentResponse
     (
-        IEnumerable<ResponseDetailsAppointment> Data,
+        IEnumerable<ResponseDetailsAllAppointment> Data,
         int TotalCount,
         int Page,
         int PageSize,

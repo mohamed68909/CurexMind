@@ -1,10 +1,4 @@
-﻿
-
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using ClincManagement.API.Abstractions;
+﻿using ClincManagement.API.Abstractions;
 using ClincManagement.API.Contracts.Stay.Requests;
 using ClincManagement.API.Contracts.Stay.Respones;
 
@@ -18,14 +12,14 @@ public interface IStayService
         int pageSize,
         CancellationToken cancel);
 
-  
+
     Task<Result<StayDto>> GetStayByIdAsync(Guid id, CancellationToken cancel);
 
     Task<Result<StayDto>> CreateStayAsync(CreateStayDto request, CancellationToken cancel);
 
-  
+
     Task<Result> UpdateStayAsync(Guid stayId, UpdateStayDto request, CancellationToken cancel);
 
-    
+
     Task<Result> DeleteStayAsync(Guid stayId, CancellationToken cancel);
 }

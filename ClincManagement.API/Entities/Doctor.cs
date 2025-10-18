@@ -17,7 +17,7 @@ namespace ClincManagement.API.Entities
         public ICollection<Operation> Operations { get; set; } = default!;
         public ICollection<Appointment> Appointments { get; set; } = default!;
 
-        public  ICollection<Review> Reviews { get; set; } = default !;
+        public ICollection<Review> Reviews { get; set; } = default!;
 
     }
 }

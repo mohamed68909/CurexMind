@@ -1,8 +1,6 @@
 ﻿using ClincManagement.API.Abstractions.Consts;
-using Microsoft.EntityFrameworkCore;
-using System.Runtime.Intrinsics.X86;
 
-namespace ClincManagement.API.EntityCognfigfigui
+namespace ClincManagement.API.EntitiesConfigurations
 {
     public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
     {
@@ -12,12 +10,10 @@ namespace ClincManagement.API.EntityCognfigfigui
                 .IsRequired()
                 .HasMaxLength(100);
 
-
-          
-            builder.OwnsOne(d => d.ProfileImageUrl, img =>
+            builder.OwnsOne(u => u.ProfileImageUrl, img =>
             {
-                img.ToTable("DoctorProfileImages");
-                img.WithOwner().HasForeignKey("DoctorId");
+                img.ToTable("UserProfileImages");
+                img.WithOwner().HasForeignKey("UserId");
                 img.Property(x => x.FileName).HasMaxLength(250);
                 img.Property(x => x.StoredFileName).HasMaxLength(250);
                 img.Property(x => x.FileExtension).HasMaxLength(10);
@@ -33,22 +29,14 @@ namespace ClincManagement.API.EntityCognfigfigui
                     NormalizedEmail = DefaultUsers.Admin.Email.ToUpper(),
                     UserName = DefaultUsers.Admin.Email,
                     NormalizedUserName = DefaultUsers.Admin.Email.ToUpper(),
-                    PasswordHash = DefaultUsers.Admin.Password,
+                    PasswordHash = DefaultUsers.Admin.Password, // تأكد أنها hash
                     EmailConfirmed = true,
                     SecurityStamp = "admin-security-stamp",
                     ConcurrencyStamp = "admin-concurrency-stamp",
-                  
                     PhoneNumber = "01234567890",
                     PhoneNumberConfirmed = true
                 }
-
             );
-
-
-
-
-
-
         }
     }
 }

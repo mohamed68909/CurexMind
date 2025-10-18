@@ -51,7 +51,7 @@ namespace ClincManagement.API.Services
                 .ExecuteUpdateAsync(setter =>
                     setter
                         .SetProperty(u => u.FullName, request.FullName)
-                       
+
                 );
             if (updated == 0)
                 return Result.Failure(UserErrors.NotFound);

@@ -1,10 +1,8 @@
 ﻿using ClincManagement.API.Abstractions;
 using ClincManagement.API.Contracts.Stay.Requests;
 using ClincManagement.API.Contracts.Stay.Respones;
-using ClincManagement.API.Entities;
 using ClincManagement.API.Errors;
 using Mapster;
-using Microsoft.EntityFrameworkCore;
 
 namespace ClincManagement.API.Services
 {
@@ -17,7 +15,7 @@ namespace ClincManagement.API.Services
             _context = context;
         }
 
-       
+
         public async Task<Result<StayDto>> CreateStayAsync(CreateStayDto request, CancellationToken cancellationToken)
         {
             var patientExists = await _context.Patients.AnyAsync(p => p.PatientId == request.PatientId, cancellationToken);
@@ -121,7 +119,7 @@ namespace ClincManagement.API.Services
 
                 _context.Stays.Update(stay);
 
-             
+
                 var activity = new StayActivity
                 {
                     StayId = stay.Id,
@@ -175,7 +173,7 @@ namespace ClincManagement.API.Services
             }
         }
 
- 
+
         public async Task<Result<StayDto>> GetStayByIdAsync(Guid stayId, CancellationToken cancellationToken)
         {
             var stay = await _context.Stays
@@ -200,7 +198,7 @@ namespace ClincManagement.API.Services
             return Result.Success(dto);
         }
 
-       
+
         public async Task<Result<PagedStayResponse>> GetAllStaysAsync(
             string? department,
             string? status,

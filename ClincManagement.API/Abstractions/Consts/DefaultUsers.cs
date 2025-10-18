@@ -11,6 +11,6 @@ public static class DefaultUsers
         public const string FirstName = "Mohamed";
         public const string LastName = "Ashraf";
         public const string Password = "AQAAAAIAAYagAAAAEKj70KPmPc7BxyRhD9MuptCGolRkbmTp27lM/5HLVQxdU/qZw0HwYDAGR9JyB4c19Q=="; // P@ssword123
-   
+
     }
 }

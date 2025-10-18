@@ -9,7 +9,7 @@ namespace ClincManagement.API.Settings
         public string? UpdatedById { get; set; }
         public string? DeletedById { get; set; }
 
-        public DateTime CreatedOn { get; set; } 
+        public DateTime CreatedOn { get; set; }
         public DateTime? UpdatedOn { get; set; }
         public DateTime? DeletedOn { get; set; }
         [NotMapped]

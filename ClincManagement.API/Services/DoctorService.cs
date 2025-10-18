@@ -3,11 +3,9 @@ using ClincManagement.API.Contracts.Clinic.Respones;
 using ClincManagement.API.Contracts.Doctors.Respones;
 using ClincManagement.API.Contracts.Review.Requests;
 using ClincManagement.API.Contracts.Review.Respones;
-using ClincManagement.API.Entities;
 using ClincManagement.API.Errors;
 using ClincManagement.API.Services.Interface;
 using Mapster;
-using Microsoft.EntityFrameworkCore;
 
 namespace ClincManagement.API.Services
 {
@@ -20,7 +18,7 @@ namespace ClincManagement.API.Services
             _context = context;
         }
 
-        
+
         public async Task<Result<IEnumerable<DoctorListResponse>>> GetAll(CancellationToken cancellationToken = default)
         {
             var doctors = await _context.Doctors
@@ -52,7 +50,7 @@ namespace ClincManagement.API.Services
             return Result.Success(response);
         }
 
-    
+
         public async Task<Result<AddReviewResponse>> AddReview(Guid doctorId, string userId, AddReviewRequest request, CancellationToken cancellationToken = default)
         {
             var doctor = await _context.Doctors
@@ -62,7 +60,7 @@ namespace ClincManagement.API.Services
             if (doctor is null)
                 return Result.Failure<AddReviewResponse>(DoctorErrors.NotFound);
 
-   
+
             var review = new Review
             {
                 Id = Guid.NewGuid(),

@@ -1,14 +1,14 @@
-﻿using ClincManagement.API.Services.Interface;
+﻿using ClincManagement.API.Helpers;
 using ClincManagement.API.Services;
-using ClincManagement.API.Helpers;
+using ClincManagement.API.Services.Interface;
+using ClincManagement.API.Settings;
+using CurexMind.API.Services;
+using CurexMind.API.Services.Interface;
 using Mapster;
 using MapsterMapper;
-using System.Reflection;
-using CurexMind.API.Services.Interface;
-using CurexMind.API.Services;
-using ClincManagement.API.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Text;
 
 namespace ClincManagement.API.Extentions
@@ -22,7 +22,7 @@ namespace ClincManagement.API.Extentions
             services.AddMapsterConfig();
             services.AddRegistrationConfig();
 
-            
+
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
             services.AddAuthenticationConfig(configuration);
@@ -104,6 +104,6 @@ namespace ClincManagement.API.Extentions
 
             return services;
         }
-       
+
     }
 }

@@ -9,12 +9,7 @@
   <ItemGroup>
     <Folder Include="Contracts\Clinic\Requests\" />
     <Folder Include="Contracts\Doctors\Requests\" />
-    <Folder Include="Contracts\Invoice\Requests\" />
-    <Folder Include="Contracts\Invoice\Respones\" />
     <Folder Include="Contracts\Operation\Requests\" />
-    <Folder Include="Contracts\Operation\Respones\" />
-    <Folder Include="Contracts\Payment\Requests\" />
-    <Folder Include="Contracts\Payment\Respones\" />
     <Folder Include="wwwroot\uploads\patients\" />
   </ItemGroup>
 

@@ -17,4 +17,3 @@ namespace ClincManagement.API.EntitiesConfigurations
     }
 
 }
- 

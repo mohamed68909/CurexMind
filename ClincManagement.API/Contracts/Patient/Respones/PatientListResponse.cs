@@ -4,19 +4,19 @@ namespace ClincManagement.API.Contracts.Patient.Responses
     public record PatientListResponseDto
     (
         Guid PatientId,
-       
+
         string FullName,
         Gender Gender,
         int Age,
         string? PhoneNumber,
         string? Address
-       
+
     )
     {
         private Guid id;
         private Gender gender;
 
-      
+
     }
 
     public record PagedPatientResponse

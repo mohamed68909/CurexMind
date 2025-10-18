@@ -1,13 +1,11 @@
-﻿using Microsoft.Extensions.Options;
+﻿using ClincManagement.API.Settings;
+using CurexMind.API.Services.Interface;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Text;
-
-using ClincManagement.API.Settings;
-using ClincManagement.API.Services.Interface;
-using CurexMind.API.Services.Interface;
+using System.Text.Json;
 
 namespace CurexMind.API.Services
 {

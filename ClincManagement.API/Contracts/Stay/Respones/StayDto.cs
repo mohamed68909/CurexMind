@@ -25,7 +25,7 @@
         public int TotalPages { get; set; }
     }
 
-    
+
     public class ActivityLogDto
     {
         public Guid Id { get; set; }

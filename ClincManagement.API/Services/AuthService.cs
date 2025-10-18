@@ -31,7 +31,7 @@ public class AuthService(
 
     public async Task<Result<AuthResponse>> SignUpAsync(SignUpRequest request, CancellationToken cancellationToken = default)
     {
-       
+
         var emailIsExists = await _userManager.Users
             .AnyAsync(u => u.Email == request.Email, cancellationToken);
 
@@ -187,7 +187,7 @@ public class AuthService(
             user.Id,
             user.Email!,
             user.FullName,
-           
+
             token,
             expiresIn,
             refreshToken,

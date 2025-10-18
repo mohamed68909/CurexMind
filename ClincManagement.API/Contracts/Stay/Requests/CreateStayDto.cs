@@ -16,7 +16,7 @@ namespace ClincManagement.API.Contracts.Stay.Requests
         public string BedNumber { get; set; } = string.Empty;
         public List<Guid>? ServiceIds { get; set; }
         [Required]
-        public string Status { get; set; } = "Active"; 
+        public string Status { get; set; } = "Active";
         [Required]
         public DateTime CheckInDate { get; set; }
         public DateTime? CheckOutDate { get; set; }

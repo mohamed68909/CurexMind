@@ -9,7 +9,7 @@
             IEnumerable<int>? clinicAccess = null,
             IEnumerable<string>? permissions = null
         );
-        
+
 
         string? ValidateToken(string token);
     }

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace ClincManagement.API.Contracts.Patient.Requests
+﻿namespace ClincManagement.API.Contracts.Patient.Requests
 {
     public record PatientRequestDto
     (
@@ -14,7 +12,7 @@ namespace ClincManagement.API.Contracts.Patient.Requests
         DateTime DateOfBirth,
 
         SocialStatus? SocialStatus,
-        
+
         IFormFile? ProfileImageUrl,
 
         string PhoneNumber,

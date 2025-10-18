@@ -4,7 +4,7 @@ using System.Reflection;
 namespace ClincManagement.API.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : IdentityDbContext<ApplicationUser,ApplicationRole,string>(options)
+        : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options)
     {
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,11 +22,12 @@ namespace ClincManagement.API.Data
         public DbSet<Invoice> Invoices => Set<Invoice>();
         public DbSet<Stay> Stays => Set<Stay>();
         public DbSet<Clinic> Clinics => Set<Clinic>();
- 
+
         public DbSet<Review> Reviews => Set<Review>();
         public DbSet<Payment> Payments => Set<Payment>();
         public DbSet<StayActivity> StayActivities => Set<StayActivity>();
         public DbSet<MedicalService> MedicalServices => Set<MedicalService>();
+        public DbSet<ServiceType> ServiceTypes => Set<ServiceType>();
 
 
 

@@ -1,5 +1,3 @@
-using Mapster;
-
 namespace ClincManagement.API
 {
     public class Program

@@ -12,7 +12,7 @@
         public string Bio { get; init; } = string.Empty;
         public double Rating { get; init; }
         public int ReviewsCount { get; init; }
-       public IFormFile? ProfileImageUrl { get; init; }
+        public IFormFile? ProfileImageUrl { get; init; }
         public List<AppointmentResponse> Appointments { get; init; } = new();
         public List<ReviewResponse> Reviews { get; init; } = new();
     }

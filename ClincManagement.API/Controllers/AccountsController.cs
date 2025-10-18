@@ -1,5 +1,4 @@
 ﻿using ClincManagement.API.Services.Interface;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClincManagement.API.Controllers

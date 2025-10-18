@@ -1,18 +1,17 @@
-﻿
+﻿using ClincManagement.API.Contracts.Appinments.Requests;
+using ClincManagement.API.Contracts.Appinments.Respones;
 using ClincManagement.API.Contracts.Authentications.Requests;
 using ClincManagement.API.Contracts.Clinic.Respones;
 using ClincManagement.API.Contracts.Doctors.Respones;
+using ClincManagement.API.Contracts.Invoice.Respones;
+using ClincManagement.API.Contracts.Operation.Response;
 using ClincManagement.API.Contracts.Patient.Requests;
 using ClincManagement.API.Contracts.Patient.Respones;
 using ClincManagement.API.Contracts.Patient.Responses;
 using ClincManagement.API.Contracts.Stay.Requests;
 using ClincManagement.API.Contracts.Stay.Respones;
-using ClincManagement.API.Contracts.Payment.Requests;
-using ClincManagement.API.Contracts.Payment.Respones;
-using ClincManagement.API.Entities;
+using ClincManagement.API.Contracts.Stay.Responses;
 using Mapster;
-using ClincManagement.API.Contracts.Appinments.Requests;
-using ClincManagement.API.Contracts.Appinments.Respones;
 
 namespace ClincManagement.API.Mapping
 {
@@ -20,9 +19,6 @@ namespace ClincManagement.API.Mapping
     {
         public void Register(TypeAdapterConfig config)
         {
-            // ============================
-            // ApplicationUser (Identity)
-            // ============================
             config.NewConfig<SignUpRequest, ApplicationUser>()
                 .Map(dest => dest.Email, src => src.Email)
                 .Map(dest => dest.PhoneNumber, src => src.PhoneNumber)
@@ -30,9 +26,6 @@ namespace ClincManagement.API.Mapping
                 .Map(dest => dest.UserName, src => src.UserName)
                 .Map(dest => dest.EmailConfirmed, _ => true);
 
-            // ============================
-            // Appointment
-            // ============================
             config.NewConfig<Appointment, AppointmentDto>()
                 .Map(dest => dest.PatientName, src => src.Patient.User.FullName)
                 .Map(dest => dest.DoctorName, src => src.Doctor.FullName)
@@ -40,7 +33,7 @@ namespace ClincManagement.API.Mapping
 
             config.NewConfig<CreateAppointmentDto, Appointment>();
             config.NewConfig<UpdateAppointmentDto, Appointment>();
-            config.NewConfig<Appointment, ResponseDetailsAppointment>();
+            config.NewConfig<Appointment, ResponseDetailsAllAppointment>();
 
             config.NewConfig<InitialBooking, Appointment>()
                 .Ignore(dest => dest.Id)
@@ -68,43 +61,6 @@ namespace ClincManagement.API.Mapping
                         ? $"/api/invoices/{src.Patient.Invoice.First().Id}"
                         : null);
 
-            // ============================
-            // Payment
-            // ============================
-            config.NewConfig<InitiatePaymentRequest, Payment>()
-                .Ignore(dest => dest.Id)
-                .Ignore(dest => dest.Invoice)
-                .Ignore(dest => dest.Appointment)
-                .Ignore(dest => dest.PatientId)
-                .Map(dest => dest.Amount, src => src.Amount)
-                .Map(dest => dest.Method, src => src.PaymentMethod)
-                .Map(dest => dest.TransactionId, src => (string)null)
-                .Map(dest => dest.Status, _ => "Pending")
-                .Map(dest => dest.CreatedAt, _ => DateTime.UtcNow);
-
-            config.NewConfig<Payment, PaymentTransactionResponse>()
-                .Map(dest => dest.PaymentId, src => src.Id)
-                .Map(dest => dest.PaymentMethod, src => src.Method)
-                .Map(dest => dest.Status, src => src.Status)
-                .Map(dest => dest.TransactionReference, src => src.TransactionId)
-                .Map(dest => dest.Message, src => $"Transaction status is: {src.Status}");
-
-            config.NewConfig<Payment, ResponseConfirmPyment>()
-                .Map(dest => dest.PaymentId, src => src.Id)
-                .Map(dest => dest.PaymentMethod, src => src.Method)
-                .Map(dest => dest.Status, src => src.Status)
-                .Map(dest => dest.Amount, src => src.Amount)
-                .Map(dest => dest.CreatedAt, src => src.CreatedAt)
-                .Map(dest => dest.Message, _ => "Payment confirmed successfully.")
-                .Map(dest => dest.doctorName, src => src.Appointment.Doctor.FullName)
-                .Map(dest => dest.specialty, src => src.Appointment.Doctor.Specialization)
-                .Map(dest => dest.PatientDetalis, src => src.Appointment.Patient.User.Adapt<PatientDetalis>());
-
-            config.NewConfig<ApplicationUser, PatientDetalis>();
-
-            // ============================
-            // Doctor
-            // ============================
             config.NewConfig<Clinic, DoctorListResponse>();
             config.NewConfig<Doctor, DoctorListResponse>()
                 .Map(dest => dest.ClinicName, src => src.Clinic.Name)
@@ -117,9 +73,6 @@ namespace ClincManagement.API.Mapping
                 .Map(dest => dest.Reviews, src => src.Reviews.Adapt<IEnumerable<ReviewResponse>>())
                 .Map(dest => dest.ProfileImageUrl, src => GenerateImageUrl(src.User.ProfileImageUrl.StoredFileName));
 
-            // ============================
-            // Patient
-            // ============================
             config.NewConfig<PatientRequestDto, Patient>()
                 .Ignore(dest => dest.PatientId)
                 .Ignore(dest => dest.CreatedDate)
@@ -133,12 +86,23 @@ namespace ClincManagement.API.Mapping
                 .Map(dest => dest.User.ProfileImageUrl.StoredFileName, src => src.ProfileImageUrl.FileName);
 
             config.NewConfig<Patient, PatientCreateResponseDto>();
-            config.NewConfig<Patient, PagedPatientResponse>();
-            config.NewConfig<Patient, PatientResponseDto>();
+            config.NewConfig<Patient, PatientResponseDto>()
+                .Map(dest => dest.FullName, src => src.User.FullName)
+                .Map(dest => dest.PhoneNumber, src => src.User.PhoneNumber)
+                .Map(dest => dest.Email, src => src.User.Email)
+                .Map(dest => dest.ProfileImageUrl, src => GenerateImageUrl(src.User.ProfileImageUrl.StoredFileName))
+                .Map(dest => dest.Age, src => CalculateAge(src.DateOfBirth));
 
-            // ============================
-            // Stay
-            // ============================
+            config.NewConfig<Patient, PatientListResponseDto>()
+                .Map(dest => dest.PatientId, src => src.PatientId)
+                .Map(dest => dest.PatientId, src => $"#{src.PatientId.ToString().Substring(0, 4).ToUpper()}")
+                .Map(dest => dest.FullName, src => src.User.FullName)
+                .Map(dest => dest.Gender, src => src.Gender)
+                .Map(dest => dest.Age, src => CalculateAge(src.DateOfBirth))
+                .Map(dest => dest.PhoneNumber, src => src.User.PhoneNumber)
+                .Map(dest => dest.Address, src => src.Address);
+
+
             config.NewConfig<CreateStayDto, Stay>()
                 .Map(dest => dest.CheckInDate, src => src.CheckInDate);
 
@@ -152,13 +116,44 @@ namespace ClincManagement.API.Mapping
                 .Map(dest => dest.ActivityLog, src => src.ActivityLog.Adapt<List<ActivityLogDto>>());
 
             config.NewConfig<StayActivity, ActivityLogDto>();
+
+            config.NewConfig<Stay, ResponsePatientStay>()
+                .Map(dest => dest.RoomBed, src => $"{src.RoomNumber}/{src.BedNumber}")
+                .Map(dest => dest.CheckIn, src => src.CheckInDate.ToString("yyyy-MM-dd HH:mm"))
+                .Map(dest => dest.CheckOut, src => src.CheckOutDate.HasValue ? src.CheckOutDate.Value.ToString("yyyy-MM-dd HH:mm") : "N/A")
+            .Map(dest => dest.Services, src => src.Services.ToString())
+                .Map(dest => dest.TotalCost, src => src.TotalCost);
+
+            config.NewConfig<Invoice, ResponsePatientInvoice>()
+          .Map(dest => dest.Date, src => src.InvoiceDate.ToString("yyyy-MM-dd"))
+          .Map(dest => dest.InvoiceNumber, src => src.InvoiceNumber)
+
+          .Map(dest => dest.Amount, src => src.FinalAmountEGP)
+          .Map(dest => dest.Paid, src => src.PaidAmountEGP)
+          .Map(dest => dest.Remaining, src => src.FinalAmountEGP - src.PaidAmountEGP)
+          .Map(dest => dest.Status, src => src.Status.ToString());
+
+            config.NewConfig<Operation, ResponsePatientOperation>()
+                .Map(dest => dest.Operation, src => src.Name)
+                .Map(dest => dest.Date, src => src.Date.ToString("yyyy-MM-dd"))
+                .Map(dest => dest.Surgeon, src => src.Doctor.FullName)
+                .Map(dest => dest.ToolsItems, src => src.Tools)
+                .Map(dest => dest.CostNotes, src => $"{src.Cost:C} - {src.Notes}");
         }
 
-        private static string GenerateImageUrl(string storedFileName)
+        private static string GenerateImageUrl(string? storedFileName)
         {
             return string.IsNullOrWhiteSpace(storedFileName)
                 ? string.Empty
                 : $"/images/{storedFileName}";
+        }
+
+        private static int CalculateAge(DateTime dateOfBirth)
+        {
+            var today = DateTime.Today;
+            var age = today.Year - dateOfBirth.Year;
+            if (dateOfBirth.Date > today.AddYears(-age)) age--;
+            return age;
         }
     }
 }

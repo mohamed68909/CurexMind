@@ -2,9 +2,9 @@
 {
     public enum OperationStatus
     {
-        Scheduled=1,
+        Scheduled = 1,
         In_Progress,
-        Completed ,
+        Completed,
         Cancel
 
     }
