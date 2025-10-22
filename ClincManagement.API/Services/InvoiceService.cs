@@ -1,8 +1,8 @@
 ﻿using ClincManagement.API.Abstractions;
 using ClincManagement.API.Contracts.Invoice.Requests;
-using ClincManagement.API.Contracts.Invoice.Requests.ClinicManagement.API.Services.Dtos;
+
 using ClincManagement.API.Contracts.Invoice.Respones;
-using ClincManagement.API.Contracts.Invoice.Respones.ClinicManagement.API.Services.Dtos;
+
 using ClinicManagement.API.Errors;
 using ClinicManagement.API.Services.Interface;
 
@@ -36,7 +36,7 @@ namespace ClinicManagement.API.Services
 
                 ServiceTypeId = request.ServiceDetails.ServiceTypeId,
                 VisitDate = request.ServiceDetails.VisitDate,
-                VisitTime = request.ServiceDetails.VisitDate.ToShortTimeString(),
+                DateTimeVisitTime = request.ServiceDetails.VisitDate,
                 TotalAmountEGP = request.AmountDetails.TotalAmountEGP,
                 DiscountEGP = request.AmountDetails.DiscountEGP,
                 FinalAmountEGP = request.AmountDetails.FinalAmountEGP,
@@ -65,7 +65,7 @@ namespace ClinicManagement.API.Services
 
                 Patient = new PatientResponseDto { Id = patient.PatientId, Name = patient.User.FullName },
                 Doctor = new DoctorResponseDto { Id = doctor.Id, Name = doctor.FullName },
-                Service = new ServiceResponseDto { Type = invoice.ServiceType.Name, VisitDate = invoice.VisitDate, VisitTime = invoice.VisitTime },
+                Service = new ServiceResponseDto { Type = invoice.ServiceType.Name, VisitDate = invoice.VisitDate, VisitTime = invoice.VisitTime.ToString() },
                 AmountBreakdown = new AmountBreakdownDto
                 {
                     ServiceCharge = invoice.TotalAmountEGP,
@@ -80,9 +80,9 @@ namespace ClinicManagement.API.Services
             return Result.Success(responseDto);
         }
 
-        public async Task<Result<InvoiceDetailsDto>> UpdateInvoiceAsync(string invoiceId, UpdateInvoiceDto request, CancellationToken cancel)
+        public async Task<Result<InvoiceDetailsDto>> UpdateInvoiceAsync(Guid invoiceId, UpdateInvoiceDto request, CancellationToken cancel)
         {
-            var invoiceGuid = Guid.Parse(invoiceId);
+            var invoiceGuid = invoiceId;
             var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.Id == invoiceGuid && !i.IsDeleted, cancel);
 
             if (invoice == null) return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.NotFound);
@@ -127,7 +127,7 @@ namespace ClinicManagement.API.Services
                 ClinicName = updatedInvoice.Doctor.Clinic.Name,
                 Patient = new PatientResponseDto { Id = updatedInvoice.Patient.PatientId, Name = updatedInvoice.Patient.User.FullName },
                 Doctor = new DoctorResponseDto { Id = updatedInvoice.Doctor.Id, Name = updatedInvoice.Doctor.FullName },
-                Service = new ServiceResponseDto { Type = updatedInvoice.ServiceType.Name, VisitDate = updatedInvoice.VisitDate, VisitTime = updatedInvoice.VisitTime },
+                Service = new ServiceResponseDto { Type = updatedInvoice.ServiceType.Name, VisitDate = updatedInvoice.VisitDate, VisitTime = updatedInvoice.VisitTime.ToString() },
                 AmountBreakdown = new AmountBreakdownDto
                 {
                     ServiceCharge = updatedInvoice.TotalAmountEGP,
@@ -142,9 +142,9 @@ namespace ClinicManagement.API.Services
             return Result.Success(updatedDto);
         }
 
-        public async Task<Result> DeleteInvoiceAsync(string invoiceId)
+        public async Task<Result> DeleteInvoiceAsync(Guid invoiceId)
         {
-            var invoiceGuid = Guid.Parse(invoiceId);
+            var invoiceGuid =invoiceId;
             var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.Id == invoiceGuid && !i.IsDeleted);
 
             if (invoice == null) return Result.Failure(InvoiceErrors.NotFound);
@@ -210,9 +210,9 @@ namespace ClinicManagement.API.Services
             return Result.Success((IEnumerable<InvoiceSummaryDto>)data);
         }
 
-        public async Task<Result<InvoiceDetailsDto>> GetInvoiceDetailsAsync(string invoiceId)
+        public async Task<Result<InvoiceDetailsDto>> GetInvoiceDetailsAsync(Guid invoiceId)
         {
-            var invoiceGuid = Guid.Parse(invoiceId);
+            var invoiceGuid = invoiceId;
             var invoice = await _context.Invoices
                 .Where(i => i.Id == invoiceGuid && !i.IsDeleted)
                 .Include(i => i.Patient).ThenInclude(p => p.User)
@@ -230,7 +230,7 @@ namespace ClinicManagement.API.Services
                 ClinicName = invoice.Doctor.Clinic.Name,
                 Patient = new PatientResponseDto { Id = invoice.Patient.PatientId, Name = invoice.Patient.User.FullName },
                 Doctor = new DoctorResponseDto { Id = invoice.Doctor.Id, Name = invoice.Doctor.FullName },
-                Service = new ServiceResponseDto { Type = invoice.ServiceType.Name, VisitDate = invoice.VisitDate, VisitTime = invoice.VisitTime },
+                Service = new ServiceResponseDto { Type = invoice.ServiceType.Name, VisitDate = invoice.VisitDate, VisitTime = invoice.VisitTime.ToString() },
                 AmountBreakdown = new AmountBreakdownDto
                 {
                     ServiceCharge = invoice.TotalAmountEGP,
@@ -245,9 +245,9 @@ namespace ClinicManagement.API.Services
             return Result.Success(responseDto);
         }
 
-        public async Task<Result<byte[]>> GeneratePdfExportAsync(string invoiceId)
+        public async Task<Result<byte[]>> GeneratePdfExportAsync(Guid invoiceId)
         {
-            var invoiceGuid = Guid.Parse(invoiceId);
+            var invoiceGuid = invoiceId;
             var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.Id == invoiceGuid && !i.IsDeleted);
 
             if (invoice == null) return Result.Failure<byte[]>(InvoiceErrors.NotFound);

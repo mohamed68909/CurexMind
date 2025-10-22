@@ -32,7 +32,7 @@ namespace ClincManagement.API.Services
             {
                 var stay = request.Adapt<Stay>();
                 stay.Id = Guid.CreateVersion7();
-                stay.Status = "Active";
+                stay.Status = st;
                 stay.CheckInDate = DateTime.UtcNow;
                 stay.IsDeleted = false;
                 stay.UpdatedOn = DateTime.UtcNow;

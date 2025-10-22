@@ -12,6 +12,7 @@ using ClincManagement.API.Services.Interface;
 using Mapster;
 using MapsterMapper;
 using Error = ClincManagement.API.Abstractions.Error;
+using PatientResponseDto = ClincManagement.API.Contracts.Patient.Respones.PatientResponseDto;
 
 public class PatientService : IPatientService
 {

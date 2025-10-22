@@ -12,6 +12,7 @@ using ClincManagement.API.Contracts.Stay.Requests;
 using ClincManagement.API.Contracts.Stay.Respones;
 using ClincManagement.API.Contracts.Stay.Responses;
 using Mapster;
+using PatientResponseDto = ClincManagement.API.Contracts.Patient.Respones.PatientResponseDto;
 
 namespace ClincManagement.API.Mapping
 {
@@ -121,7 +122,7 @@ namespace ClincManagement.API.Mapping
                 .Map(dest => dest.RoomBed, src => $"{src.RoomNumber}/{src.BedNumber}")
                 .Map(dest => dest.CheckIn, src => src.CheckInDate.ToString("yyyy-MM-dd HH:mm"))
                 .Map(dest => dest.CheckOut, src => src.CheckOutDate.HasValue ? src.CheckOutDate.Value.ToString("yyyy-MM-dd HH:mm") : "N/A")
-            .Map(dest => dest.Services, src => src.Services.ToString())
+            .Map(dest => dest.Services, src => src.ServiceType.ToString())
                 .Map(dest => dest.TotalCost, src => src.TotalCost);
 
             config.NewConfig<Invoice, ResponsePatientInvoice>()

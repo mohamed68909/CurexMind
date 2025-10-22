@@ -7,6 +7,7 @@ using ClincManagement.API.Contracts.Stay.Responses;
 using ClincManagement.API.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PatientResponseDto = ClincManagement.API.Contracts.Patient.Respones.PatientResponseDto;
 
 namespace ClincManagement.API.Controllers
 {

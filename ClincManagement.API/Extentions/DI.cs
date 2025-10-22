@@ -2,6 +2,8 @@
 using ClincManagement.API.Services;
 using ClincManagement.API.Services.Interface;
 using ClincManagement.API.Settings;
+using ClinicManagement.API.Services;
+using ClinicManagement.API.Services.Interface;
 using CurexMind.API.Services;
 using CurexMind.API.Services.Interface;
 using Mapster;
@@ -22,9 +24,14 @@ namespace ClincManagement.API.Extentions
             services.AddMapsterConfig();
             services.AddRegistrationConfig();
 
-
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
+
+           
+            services.AddSwaggerGen(options =>
+            {
+                options.CustomSchemaIds(type => type.FullName);
+            });
+
             services.AddAuthenticationConfig(configuration);
 
             return services;
@@ -42,7 +49,6 @@ namespace ClincManagement.API.Extentions
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-
             return services;
         }
 
@@ -59,6 +65,7 @@ namespace ClincManagement.API.Extentions
             services.AddSingleton<IMapper>(new Mapper(mapsterConfig));
             return services;
         }
+
         private static IServiceCollection AddAuthenticationConfig(this IServiceCollection services, IConfiguration configuration)
         {
             services
@@ -69,12 +76,14 @@ namespace ClincManagement.API.Extentions
 
             var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ??
                 throw new InvalidOperationException($"Configuration section '{JwtOptions.SectionName}' not found or invalid.");
+
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
+            })
+            .AddJwtBearer(options =>
             {
                 options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -86,9 +95,9 @@ namespace ClincManagement.API.Extentions
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key))
-
                 };
             });
+
             return services;
         }
 
@@ -101,9 +110,10 @@ namespace ClincManagement.API.Extentions
             services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IUserHelpers, UserHelpers>();
             services.AddScoped<IStayService, StayService>();
+            services.AddScoped<IInvoiceService, InvoiceService>();
+            services.AddScoped<IPaymentService, PaymentService>();
 
             return services;
         }
-
     }
 }

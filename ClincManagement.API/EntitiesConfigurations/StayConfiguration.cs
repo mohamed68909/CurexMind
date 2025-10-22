@@ -14,7 +14,7 @@
             builder.Property(s => s.CheckInDate).IsRequired();
             builder.Property(s => s.CheckOutDate).IsRequired(false);
             builder.Property(s => s.Notes).HasColumnType("nvarchar(max)").IsRequired(false);
-            builder.Property(s => s.Services).HasColumnType("nvarchar(max)").IsRequired(false);
+           
             builder.Property(s => s.TotalCost).IsRequired().HasColumnType("decimal(18,2)");
 
             builder.HasOne(s => s.Patient)

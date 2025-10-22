@@ -1,4 +1,6 @@
-﻿namespace ClinicManagement.API.EntitiesConfigurations
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+
+namespace ClinicManagement.API.EntitiesConfigurations
 {
     public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
     {
@@ -97,7 +99,9 @@
                     Notes = "Initial consultation fee (includes 10% discount).",
 
                     IsDeleted = false,
-                    CreatedDate = new DateTime(2025, 09, 15)
+                    CreatedDate = new DateTime(2025, 09, 15),
+                    CreatedById = "System",
+                    CreatedOn = new DateTime(2025, 09, 15)
                 }
             );
         }

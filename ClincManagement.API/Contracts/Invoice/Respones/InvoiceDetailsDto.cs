@@ -1,7 +1,6 @@
 ﻿namespace ClincManagement.API.Contracts.Invoice.Respones
 {
-    namespace ClinicManagement.API.Services.Dtos
-    {
+  
         public class InvoiceDetailsDto
         {
 
@@ -63,4 +62,3 @@
             public decimal Remaining { get; set; }
         }
     }
-}

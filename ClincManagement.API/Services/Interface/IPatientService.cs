@@ -6,6 +6,7 @@ using ClincManagement.API.Contracts.Patient.Requests;
 using ClincManagement.API.Contracts.Patient.Respones;
 using ClincManagement.API.Contracts.Patient.Responses;
 using ClincManagement.API.Contracts.Stay.Responses;
+using PatientResponseDto = ClincManagement.API.Contracts.Patient.Respones.PatientResponseDto;
 
 namespace ClincManagement.API.Services.Interface
 {

@@ -1,7 +1,6 @@
 ﻿namespace ClincManagement.API.Contracts.Invoice.Requests
 {
-    namespace ClinicManagement.API.Services.Dtos
-    {
+   
         public class InvoiceFilterDto
         {
             public string SearchQuery { get; set; }
@@ -34,4 +33,4 @@
             public string SortDirection { get; set; } = "desc";
         }
     }
-}
+
