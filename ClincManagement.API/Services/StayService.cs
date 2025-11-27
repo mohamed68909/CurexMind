@@ -1,264 +1,190 @@
 ﻿using ClincManagement.API.Abstractions;
 using ClincManagement.API.Contracts.Stay.Requests;
+using ClincManagement.API.Contracts.Stay.Respones.ClincManagement.API.Contracts.Stay.Responses;
 using ClincManagement.API.Contracts.Stay.Respones;
+using ClincManagement.API.Entities;
 using ClincManagement.API.Errors;
-using Mapster;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ClincManagement.API.Services
 {
     public class StayService : IStayService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<StayService> _logger;
 
-        public StayService(ApplicationDbContext context)
+        public StayService(ApplicationDbContext context, ILogger<StayService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
-
-        public async Task<Result<StayDto>> CreateStayAsync(CreateStayDto request, CancellationToken cancellationToken)
+        public async Task<Result<StayDetailsResponse>> CreateStayAsync(CreateStayRequest request, CancellationToken cancellationToken = default)
         {
-            var patientExists = await _context.Patients.AnyAsync(p => p.PatientId == request.PatientId, cancellationToken);
-            if (!patientExists)
-                return Result.Failure<StayDto>(StayErrors.InvalidPatient);
-
-            var existingStay = await _context.Stays
-                .AnyAsync(s => s.PatientId == request.PatientId && s.Status != "Discharged" && !s.IsDeleted, cancellationToken);
-
-            if (existingStay)
-                return Result.Failure<StayDto>(StayErrors.AlreadyExists);
-
+            using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                var stay = request.Adapt<Stay>();
-                stay.Id = Guid.CreateVersion7();
-                stay.Status = st;
-                stay.CheckInDate = DateTime.UtcNow;
-                stay.IsDeleted = false;
-                stay.UpdatedOn = DateTime.UtcNow;
+                // تحقق من وجود المريض
+                var patientExists = await _context.Patients.AnyAsync(p => p.PatientId == request.PatientId, cancellationToken);
+                if (!patientExists)
+                    return Result.Failure<StayDetailsResponse>(StayErrors.InvalidPatient);
 
+                // تحقق من تضارب StayType / Dates (اختياري)
+                var overlappingStay = await _context.Stays
+                    .AnyAsync(s => s.PatientId == request.PatientId &&
+                                   s.StartDate < (request.EndDate ?? DateTime.MaxValue) &&
+                                   (s.EndDate ?? DateTime.MaxValue) > request.StartDate,
+                              cancellationToken);
+                if (overlappingStay)
+                    return Result.Failure<StayDetailsResponse>(StayErrors.AlreadyExists);
 
-                if (request.ServiceIds is not null && request.ServiceIds.Any())
+                var stay = new Stay
                 {
-                    var services = await _context.MedicalServices
-                        .Where(s => request.ServiceIds.Contains(s.Id))
-                        .ToListAsync(cancellationToken);
-
-                    stay.MedicalServices = services;
-                    stay.TotalCost = services.Sum(s => s.Cost);
-                }
-
-
-                _context.Stays.Add(stay);
-
-                var activity = new StayActivity
-                {
-                    StayId = stay.Id,
-                    Action = "Created",
-                    ByUser = "System",
-                    Description = $"Stay created for patient {stay.PatientId}",
-                    CreatedOn = DateTime.UtcNow
+                    Id = Guid.NewGuid(),
+                    PatientId = request.PatientId,
+                    Department = request.Department,
+                    RoomNumber = request.RoomNumber,
+                    BedNumber = request.BedNumber,
+                    StayType = request.StayType,
+                    Status = StayStatus.Active,
+                    StartDate = request.StartDate,
+                    EndDate = request.EndDate,
+                    Notes = request.Notes
                 };
-                _context.StayActivities.Add(activity);
 
+                await _context.Stays.AddAsync(stay, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
-                var dto = stay.Adapt<StayDto>();
-                dto.PatientName = await _context.Patients
-                    .Where(p => p.PatientId == stay.PatientId)
-                    .Select(p => p.User.UserName)
-                    .FirstOrDefaultAsync(cancellationToken) ?? "Unknown";
-
-                dto.ActivityLog = new List<ActivityLogDto>
-                {
-                    new ActivityLogDto
-                    {
-                        Id = activity.Id,
-                        Action = activity.Action,
-                        ByUser = activity.ByUser,
-                        Timestamp = activity.CreatedOn
-                    }
-                };
-
-                return Result.Success(dto);
+                // جلب التفاصيل للـ Response
+                return await GetStayByIdAsync(stay.Id, cancellationToken);
             }
-            catch
+            catch (Exception ex)
             {
-                return Result.Failure<StayDto>(StayErrors.CreationFailed);
+                await transaction.RollbackAsync(cancellationToken);
+                _logger.LogError(ex, "Error creating stay");
+                return Result.Failure<StayDetailsResponse>(StayErrors.CreationFailed);
             }
         }
 
-        public async Task<Result> UpdateStayAsync(Guid stayId, UpdateStayDto request, CancellationToken cancellationToken)
-        {
-            var stay = await _context.Stays
-                .FirstOrDefaultAsync(s => s.Id == stayId && !s.IsDeleted, cancellationToken);
-
-            if (stay is null)
-                return Result.Failure(StayErrors.NotFound);
-
-            try
-            {
-                stay.Department = request.Department;
-                stay.RoomNumber = request.RoomNumber;
-                stay.BedNumber = request.BedNumber;
-                stay.Status = request.Status;
-                stay.Notes = request.Notes;
-                stay.CheckOutDate = request.CheckOutDate;
-                stay.UpdatedOn = DateTime.UtcNow;
-
-                if (request.ServiceIds is not null && request.ServiceIds.Any())
-                {
-                    var services = await _context.MedicalServices
-                        .Where(s => request.ServiceIds.Contains(s.Id))
-                        .ToListAsync(cancellationToken);
-
-                    stay.MedicalServices = services;
-                    stay.TotalCost = services.Sum(s => s.Cost);
-                }
-
-
-                _context.Stays.Update(stay);
-
-
-                var activity = new StayActivity
-                {
-                    StayId = stay.Id,
-                    Action = "Updated",
-                    ByUser = "System",
-                    Description = $"Stay updated ({stay.Status})",
-                    CreatedOn = DateTime.UtcNow
-                };
-                _context.StayActivities.Add(activity);
-
-                await _context.SaveChangesAsync(cancellationToken);
-
-                return Result.Success();
-            }
-            catch
-            {
-                return Result.Failure(StayErrors.UpdateFailed);
-            }
-        }
-
-        public async Task<Result> DeleteStayAsync(Guid stayId, CancellationToken cancellationToken)
+        public async Task<Result> DeleteStayAsync(Guid stayId, CancellationToken cancellationToken = default)
         {
             var stay = await _context.Stays.FirstOrDefaultAsync(s => s.Id == stayId, cancellationToken);
-            if (stay is null)
-                return Result.Failure(StayErrors.NotFound);
+            if (stay == null) return Result.Failure(StayErrors.NotFound);
+
+            _context.Stays.Remove(stay);
 
             try
             {
-                stay.IsDeleted = true;
-                stay.UpdatedOn = DateTime.UtcNow;
-
-                _context.Stays.Update(stay);
-
-                var activity = new StayActivity
-                {
-                    StayId = stay.Id,
-                    Action = "Deleted",
-                    ByUser = "System",
-                    Description = "Stay record deleted.",
-                    CreatedOn = DateTime.UtcNow
-                };
-                _context.StayActivities.Add(activity);
-
                 await _context.SaveChangesAsync(cancellationToken);
-
                 return Result.Success();
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error deleting stay");
                 return Result.Failure(StayErrors.DeletionFailed);
             }
         }
 
-
-        public async Task<Result<StayDto>> GetStayByIdAsync(Guid stayId, CancellationToken cancellationToken)
+        public async Task<Result<PagedStayResponse>> GetAllStaysAsync(string? department, string? status, int page, int pageSize, CancellationToken cancellationToken = default)
         {
-            var stay = await _context.Stays
-                .Include(s => s.Patient)
-                .Include(s => s.ActivityLog)
-                .FirstOrDefaultAsync(s => s.Id == stayId && !s.IsDeleted, cancellationToken);
+            IQueryable<Stay> query = _context.Stays.Include(s => s.Patient).ThenInclude(p => p.User);
 
-            if (stay is null)
-                return Result.Failure<StayDto>(StayErrors.NotFound);
+            if (!string.IsNullOrWhiteSpace(department))
+                query = query.Where(s => s.Department.ToLower().Contains(department.ToLower()));
 
-            var dto = stay.Adapt<StayDto>();
-            dto.PatientName = $"{stay.Patient.User.UserName}";
-            dto.ActivityLog = stay.ActivityLog
-                .Select(a => new ActivityLogDto
-                {
-                    Id = a.Id,
-                    Action = a.Action,
-                    ByUser = a.ByUser,
-                    Timestamp = a.CreatedOn,
-                }).ToList();
+            if (!string.IsNullOrWhiteSpace(status))
+                query = query.Where(s => s.Status.ToString() == status);
 
-            return Result.Success(dto);
-        }
+            var total = await query.CountAsync(cancellationToken);
 
-
-        public async Task<Result<PagedStayResponse>> GetAllStaysAsync(
-            string? department,
-            string? status,
-            int page,
-            int pageSize,
-            CancellationToken cancellationToken)
-        {
-            var query = _context.Stays
-                .Include(s => s.Patient)
-                .Include(s => s.ActivityLog)
-                .Where(s => !s.IsDeleted)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(department))
-                query = query.Where(s => s.Department == department);
-
-            if (!string.IsNullOrEmpty(status))
-                query = query.Where(s => s.Status == status);
-
-            var totalCount = await query.CountAsync(cancellationToken);
-            if (totalCount == 0)
-                return Result.Failure<PagedStayResponse>(StayErrors.NotFound);
-
-            var stays = await query
-                .OrderByDescending(s => s.CheckInDate)
+            var data = await query
+                .OrderByDescending(s => s.StartDate)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
 
-            var data = stays.Select(stay => new StayDto
+            var list = data.Select(s => new StayListResponse
             {
-                Id = stay.Id,
-                PatientId = stay.PatientId,
-                PatientName = stay.Patient.User.UserName,
-                Department = stay.Department,
-                Status = stay.Status,
-                RoomNumber = stay.RoomNumber,
-                BedNumber = stay.BedNumber,
-                CheckInDate = stay.CheckInDate,
-                CheckOutDate = stay.CheckOutDate,
-                Notes = stay.Notes,
-                ActivityLog = stay.ActivityLog.Select(a => new ActivityLogDto
-                {
-                    Id = a.Id,
-                    Action = a.Action,
-                    ByUser = a.ByUser,
-                    Timestamp = a.CreatedOn,
-                }).ToList()
+                StayId = s.Id,
+                PatientName = s.Patient.User.FullName,
+                Department = s.Department,
+                RoomBed = $"{s.RoomNumber}/{s.BedNumber}",
+                StayType = s.StayType.ToString(),
+                Date = s.StartDate,
+                Status = s.Status.ToString()
             }).ToList();
 
-            var response = new PagedStayResponse
+            return Result.Success(new PagedStayResponse
             {
-                Data = data,
-                TotalCount = totalCount,
-                Page = page,
-                PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                TotalCount = total,
+                Stays = list
+            });
+        }
+
+        public async Task<Result<StayDetailsResponse>> GetStayByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            var stay = await _context.Stays
+                .Include(s => s.Patient)
+                .ThenInclude(p => p.User)
+                .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+
+            if (stay == null) return Result.Failure<StayDetailsResponse>(StayErrors.NotFound);
+
+            var response = new StayDetailsResponse
+            {
+                StayId = stay.Id,
+                Patient = new PatientInfoDto
+                {
+                    FullName = stay.Patient.User.FullName,
+                    Gender = stay.Patient.Gender.ToString(),
+                    Age = (int)((DateTime.Today - stay.Patient.DateOfBirth).TotalDays / 365.25),
+                    PhoneNumber = stay.Patient.User.PhoneNumber ?? string.Empty
+                },
+                Stay = new StayInfoDto
+                {
+                    Department = stay.Department,
+                    RoomBed = $"{stay.RoomNumber}/{stay.BedNumber}",
+                    StayType = stay.StayType.ToString(),
+                    StartDate = stay.StartDate,
+                    EndDate = stay.EndDate,
+                    Status = stay.Status.ToString(),
+                    Notes = stay.Notes
+                }
             };
 
             return Result.Success(response);
+        }
+
+        public async Task<Result> UpdateStayAsync(Guid stayId, UpdateStayRequest request, CancellationToken cancellationToken = default)
+        {
+            var stay = await _context.Stays.FirstOrDefaultAsync(s => s.Id == stayId, cancellationToken);
+            if (stay == null) return Result.Failure(StayErrors.NotFound);
+
+            stay.Department = request.Department;
+            stay.RoomNumber = request.RoomNumber;
+            stay.BedNumber = request.BedNumber;
+            stay.StayType = request.StayType;
+            stay.Status = request.Status;
+            stay.StartDate = request.StartDate;
+            stay.EndDate = request.EndDate;
+            stay.Notes = request.Notes;
+
+            try
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating stay");
+                return Result.Failure(StayErrors.UpdateFailed);
+            }
         }
     }
 }

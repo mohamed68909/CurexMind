@@ -57,10 +57,10 @@ namespace ClinicManagement.API.EntitiesConfigurations
 
 
 
-            builder.HasOne(i => i.ServiceType)
-                .WithMany(s => s.Invoices)
-                .HasForeignKey(i => i.ServiceTypeId)
-                .OnDelete(DeleteBehavior.Restrict);
+            //builder.HasOne(i => i.ServiceType)
+               // .WithMany(s => s.Invoices)
+               // .HasForeignKey(i => i.ServiceTypeId)
+               // .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(i => i.Payment)
                 .WithOne(p => p.Invoice)
@@ -92,7 +92,7 @@ namespace ClinicManagement.API.EntitiesConfigurations
                     InvoiceDate = new DateTime(2025, 09, 15),
                     DueDate = new DateTime(2025, 10, 15),
                     VisitDate = new DateTime(2025, 09, 10),
-                    VisitTime = "10:00 AM",
+                    VisitTime = new TimeOnly(10, 0),
                     Status = InvoiceStatus.Paid,
                     PaymentMethod = "Cash",
 

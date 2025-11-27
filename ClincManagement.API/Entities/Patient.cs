@@ -7,9 +7,9 @@ namespace ClincManagement.API.Entities
         public Guid PatientId { get; set; } = Guid.CreateVersion7();
         public string NationalId { get; set; } = string.Empty;
         public Gender Gender { get; set; } = Gender.Other;
-        public string Address { get; set; } = string.Empty;
+        public string ? Address { get; set; } = string.Empty;
 
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
             = string.Empty;
         public DateTime DateOfBirth { get; set; }
 
@@ -17,12 +17,12 @@ namespace ClincManagement.API.Entities
         public DateTime UpdatedDate { get; set; }
 
 
-
+        
         public SocialStatus SocialStatus { get; set; } = SocialStatus.Single;
 
-        public string UserId { get; set; } = string.Empty;
-        public ApplicationUser User { get; set; } = default!;
-        public ICollection<Appointment> Appointments { get; set; } = default!;
+        public string? UserId { get; set; } 
+        public ApplicationUser? User { get; set; } = default!;
+        public ICollection<Appointment?> Appointments { get; set; } = default!;
         public ICollection<Invoice> Invoice { get; set; } = default!;
         public ICollection<Patient> Patients { get; set; } = default!;
 

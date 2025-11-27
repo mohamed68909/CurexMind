@@ -11,7 +11,7 @@
 
         DateTime DateOfBirth,
 
-        SocialStatus? SocialStatus,
+        SocialStatus SocialStatus,
 
         IFormFile? ProfileImageUrl,
 
@@ -37,7 +37,7 @@
     (
         Guid ClinicId,
         Guid DoctorId,
-        AppointmentType? AppointmentType,
+        AppointmentType AppointmentType,
         DateTime? AppointmentDate,
         string? Notes
     );

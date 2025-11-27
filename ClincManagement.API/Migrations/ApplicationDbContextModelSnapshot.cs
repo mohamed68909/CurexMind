@@ -250,25 +250,6 @@ namespace ClincManagement.API.Migrations
                     b.HasIndex("UpdatedById");
 
                     b.ToTable("Appointments");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
-                            AppointmentDate = new DateTime(2025, 9, 18, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            AppointmentTime = "10:00 AM",
-                            ClinicId = new Guid("33333333-3333-3333-3333-333333333333"),
-                            CreatedById = "system",
-                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            DoctorId = new Guid("22222222-2222-2222-2222-222222222222"),
-                            Duration = 30,
-                            IsDeleted = false,
-                            Notes = "General check-up",
-                            PatientId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            Status = 1,
-                            Type = 1,
-                            UpdatedDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        });
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Clinic", b =>
@@ -323,89 +304,6 @@ namespace ClincManagement.API.Migrations
                         });
                 });
 
-            modelBuilder.Entity("ClincManagement.API.Entities.Doctor", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ClinicId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("CreatedById")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeletedById")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeletedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Languages")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Specialization")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("UpdatedById")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("YearsOfExperience")
-                        .HasColumnType("int");
-
-                    b.Property<string>("userId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClinicId");
-
-                    b.HasIndex("FullName")
-                        .HasDatabaseName("IX_DoctorFullName");
-
-                    b.HasIndex("UpdatedById");
-
-                    b.HasIndex("userId")
-                        .IsUnique();
-
-                    b.ToTable("Doctors");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            ClinicId = new Guid("33333333-3333-3333-3333-333333333333"),
-                            CreatedById = "system",
-                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FullName = "Dr. John Smith",
-                            IsDeleted = false,
-                            Languages = "English, Spanish",
-                            Specialization = "Cardiology",
-                            YearsOfExperience = 12,
-                            userId = "4E14506C-D3C0-4AE3-8616-5EB95A764358"
-                        });
-                });
-
             modelBuilder.Entity("ClincManagement.API.Entities.Invoice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -418,9 +316,6 @@ namespace ClincManagement.API.Migrations
                     b.Property<string>("CreatedById")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
@@ -467,6 +362,9 @@ namespace ClincManagement.API.Migrations
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("PaymentId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -492,10 +390,9 @@ namespace ClincManagement.API.Migrations
                     b.Property<DateTime>("VisitDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("VisitTime")
-                        .IsRequired()
+                    b.Property<TimeOnly>("VisitTime")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("time");
 
                     b.HasKey("Id");
 
@@ -526,7 +423,6 @@ namespace ClincManagement.API.Migrations
                             Id = new Guid("55555555-5555-5555-5555-555555555555"),
                             ClinicId = new Guid("33333333-3333-3333-3333-333333333333"),
                             CreatedById = "System",
-                            CreatedDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedOn = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             DiscountEGP = 50.00m,
                             DoctorId = new Guid("22222222-2222-2222-2222-222222222222"),
@@ -543,29 +439,8 @@ namespace ClincManagement.API.Migrations
                             Status = "Paid",
                             TotalAmountEGP = 500.00m,
                             VisitDate = new DateTime(2025, 9, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            VisitTime = "10:00 AM"
+                            VisitTime = new TimeOnly(10, 0, 0)
                         });
-                });
-
-            modelBuilder.Entity("ClincManagement.API.Entities.MedicalService", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Cost")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MedicalServices");
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Operation", b =>
@@ -666,7 +541,6 @@ namespace ClincManagement.API.Migrations
                         .HasColumnType("nvarchar(15)");
 
                     b.Property<string>("Notes")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("PatientId1")
@@ -685,7 +559,6 @@ namespace ClincManagement.API.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("PatientId");
@@ -698,7 +571,8 @@ namespace ClincManagement.API.Migrations
                     b.HasIndex("UpdatedById");
 
                     b.HasIndex("UserId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("Patients");
 
@@ -778,21 +652,6 @@ namespace ClincManagement.API.Migrations
                         .HasDatabaseName("IX_Payment_Status");
 
                     b.ToTable("Payments", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("55555555-5555-5555-5555-555555555556"),
-                            Amount = 200.00m,
-                            AppointmentId = new Guid("44444444-4444-4444-4444-444444444444"),
-                            ConfirmedAt = new DateTime(2025, 9, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2025, 9, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            InvoiceId = new Guid("55555555-5555-5555-5555-555555555555"),
-                            Method = 0,
-                            PatientId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            Status = "Success",
-                            TransactionId = "TRX123456789"
-                        });
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Review", b =>
@@ -846,54 +705,6 @@ namespace ClincManagement.API.Migrations
                         });
                 });
 
-            modelBuilder.Entity("ClincManagement.API.Entities.ServiceType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("CreatedById")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("DefaultPriceEGP")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("DeletedById")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeletedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UpdatedById")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UpdatedById");
-
-                    b.ToTable("ServiceTypes");
-                });
-
             modelBuilder.Entity("ClincManagement.API.Entities.Stay", b =>
                 {
                     b.Property<Guid>("Id")
@@ -905,32 +716,13 @@ namespace ClincManagement.API.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<DateTime>("CheckInDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("CheckOutDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedById")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeletedById")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeletedOn")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Department")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -943,31 +735,23 @@ namespace ClincManagement.API.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<decimal>("TotalCost")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("UpdatedById")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("StayType")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CheckInDate")
-                        .HasDatabaseName("IX_StayCheckInDate");
 
                     b.HasIndex("PatientId");
 
                     b.HasIndex("RoomNumber")
                         .HasDatabaseName("IX_StayRoomNumber");
-
-                    b.HasIndex("UpdatedById");
 
                     b.ToTable("Stays");
 
@@ -976,33 +760,24 @@ namespace ClincManagement.API.Migrations
                         {
                             Id = new Guid("77777777-7777-7777-7777-777777777777"),
                             BedNumber = "B1",
-                            CheckInDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CheckOutDate = new DateTime(1900, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedById = "System",
-                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Department = "General Medicine",
-                            IsDeleted = false,
                             Notes = "Patient admitted for observation.",
                             PatientId = new Guid("11111111-1111-1111-1111-111111111111"),
                             RoomNumber = "101A",
+                            StartDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Status = "Active",
-                            TotalCost = 1500m
+                            StayType = 0
                         });
                 });
 
-            modelBuilder.Entity("ClincManagement.API.Entities.StayActivity", b =>
+            modelBuilder.Entity("Doctor", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ByUser")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("ClinicId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CreatedById")
                         .IsRequired()
@@ -1017,15 +792,22 @@ namespace ClincManagement.API.Migrations
                     b.Property<DateTime?>("DeletedOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("StayId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Languages")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Specialization")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("UpdatedById")
                         .HasColumnType("nvarchar(450)");
@@ -1033,28 +815,38 @@ namespace ClincManagement.API.Migrations
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("YearsOfExperience")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("StayId");
+                    b.HasIndex("ClinicId");
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("StayActivities");
-                });
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
-            modelBuilder.Entity("MedicalServiceStay", b =>
-                {
-                    b.Property<Guid>("MedicalServicesId")
-                        .HasColumnType("uniqueidentifier");
+                    b.ToTable("Doctors");
 
-                    b.Property<Guid>("StaysId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("MedicalServicesId", "StaysId");
-
-                    b.HasIndex("StaysId");
-
-                    b.ToTable("MedicalServiceStay");
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            ClinicId = new Guid("33333333-3333-3333-3333-333333333333"),
+                            CreatedById = "system",
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            FullName = "Dr. John Smith",
+                            IsDeleted = false,
+                            Languages = "English, Spanish",
+                            Specialization = "Cardiology",
+                            UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
+                            YearsOfExperience = 12
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1204,7 +996,7 @@ namespace ClincManagement.API.Migrations
                                 .HasForeignKey("ApplicationUserId");
                         });
 
-                    b.OwnsOne("ClincManagement.API.Entities.UploadedFile", "ProfileImageUrl", b1 =>
+                    b.OwnsOne("ClincManagement.API.Entities.UploadedFile", "ProfileImage", b1 =>
                         {
                             b1.Property<string>("UserId")
                                 .HasColumnType("nvarchar(450)");
@@ -1235,9 +1027,19 @@ namespace ClincManagement.API.Migrations
 
                             b1.WithOwner()
                                 .HasForeignKey("UserId");
+
+                            b1.HasData(
+                                new
+                                {
+                                    UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
+                                    ContentType = "image/jpeg",
+                                    FileExtension = ".jpg",
+                                    FileName = "admin.jpg",
+                                    StoredFileName = "admin-123.jpg"
+                                });
                         });
 
-                    b.Navigation("ProfileImageUrl");
+                    b.Navigation("ProfileImage");
 
                     b.Navigation("RefreshTokens");
                 });
@@ -1250,7 +1052,7 @@ namespace ClincManagement.API.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("ClincManagement.API.Entities.Doctor", "Doctor")
+                    b.HasOne("Doctor", "Doctor")
                         .WithMany("Appointments")
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1275,31 +1077,6 @@ namespace ClincManagement.API.Migrations
                     b.Navigation("UpdatedBy");
                 });
 
-            modelBuilder.Entity("ClincManagement.API.Entities.Doctor", b =>
-                {
-                    b.HasOne("ClincManagement.API.Entities.Clinic", "Clinic")
-                        .WithMany("Doctors")
-                        .HasForeignKey("ClinicId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ClincManagement.API.Entities.ApplicationUser", "UpdatedBy")
-                        .WithMany()
-                        .HasForeignKey("UpdatedById");
-
-                    b.HasOne("ClincManagement.API.Entities.ApplicationUser", "User")
-                        .WithOne("Doctor")
-                        .HasForeignKey("ClincManagement.API.Entities.Doctor", "userId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Clinic");
-
-                    b.Navigation("UpdatedBy");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("ClincManagement.API.Entities.Invoice", b =>
                 {
                     b.HasOne("ClincManagement.API.Entities.Clinic", "Clinic")
@@ -1308,7 +1085,7 @@ namespace ClincManagement.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ClincManagement.API.Entities.Doctor", "Doctor")
+                    b.HasOne("Doctor", "Doctor")
                         .WithMany()
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1320,12 +1097,6 @@ namespace ClincManagement.API.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ClincManagement.API.Entities.ServiceType", "ServiceType")
-                        .WithMany("Invoices")
-                        .HasForeignKey("ServiceTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("ClincManagement.API.Entities.ApplicationUser", "UpdatedBy")
                         .WithMany()
                         .HasForeignKey("UpdatedById");
@@ -1335,8 +1106,6 @@ namespace ClincManagement.API.Migrations
                     b.Navigation("Doctor");
 
                     b.Navigation("Patient");
-
-                    b.Navigation("ServiceType");
 
                     b.Navigation("UpdatedBy");
                 });
@@ -1349,7 +1118,7 @@ namespace ClincManagement.API.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("ClincManagement.API.Entities.Doctor", "Doctor")
+                    b.HasOne("Doctor", "Doctor")
                         .WithMany("Operations")
                         .HasForeignKey("SurgeonId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -1373,8 +1142,7 @@ namespace ClincManagement.API.Migrations
                     b.HasOne("ClincManagement.API.Entities.ApplicationUser", "User")
                         .WithOne("Patient")
                         .HasForeignKey("ClincManagement.API.Entities.Patient", "UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("UpdatedBy");
 
@@ -1414,7 +1182,7 @@ namespace ClincManagement.API.Migrations
                         .HasForeignKey("ClinicId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("ClincManagement.API.Entities.Doctor", "Doctor")
+                    b.HasOne("Doctor", "Doctor")
                         .WithMany("Reviews")
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1433,15 +1201,6 @@ namespace ClincManagement.API.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("ClincManagement.API.Entities.ServiceType", b =>
-                {
-                    b.HasOne("ClincManagement.API.Entities.ApplicationUser", "UpdatedBy")
-                        .WithMany()
-                        .HasForeignKey("UpdatedById");
-
-                    b.Navigation("UpdatedBy");
-                });
-
             modelBuilder.Entity("ClincManagement.API.Entities.Stay", b =>
                 {
                     b.HasOne("ClincManagement.API.Entities.Patient", "Patient")
@@ -1450,45 +1209,32 @@ namespace ClincManagement.API.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("ClincManagement.API.Entities.ApplicationUser", "UpdatedBy")
-                        .WithMany()
-                        .HasForeignKey("UpdatedById");
-
                     b.Navigation("Patient");
-
-                    b.Navigation("UpdatedBy");
                 });
 
-            modelBuilder.Entity("ClincManagement.API.Entities.StayActivity", b =>
+            modelBuilder.Entity("Doctor", b =>
                 {
-                    b.HasOne("ClincManagement.API.Entities.Stay", "Stay")
-                        .WithMany("ActivityLog")
-                        .HasForeignKey("StayId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("ClincManagement.API.Entities.Clinic", "Clinic")
+                        .WithMany("Doctors")
+                        .HasForeignKey("ClinicId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ClincManagement.API.Entities.ApplicationUser", "UpdatedBy")
                         .WithMany()
                         .HasForeignKey("UpdatedById");
 
-                    b.Navigation("Stay");
+                    b.HasOne("ClincManagement.API.Entities.ApplicationUser", "User")
+                        .WithOne("Doctor")
+                        .HasForeignKey("Doctor", "UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Clinic");
 
                     b.Navigation("UpdatedBy");
-                });
 
-            modelBuilder.Entity("MedicalServiceStay", b =>
-                {
-                    b.HasOne("ClincManagement.API.Entities.MedicalService", null)
-                        .WithMany()
-                        .HasForeignKey("MedicalServicesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ClincManagement.API.Entities.Stay", null)
-                        .WithMany()
-                        .HasForeignKey("StaysId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1544,11 +1290,9 @@ namespace ClincManagement.API.Migrations
 
             modelBuilder.Entity("ClincManagement.API.Entities.ApplicationUser", b =>
                 {
-                    b.Navigation("Doctor")
-                        .IsRequired();
+                    b.Navigation("Doctor");
 
-                    b.Navigation("Patient")
-                        .IsRequired();
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Appointment", b =>
@@ -1561,15 +1305,6 @@ namespace ClincManagement.API.Migrations
                     b.Navigation("Appointments");
 
                     b.Navigation("Doctors");
-
-                    b.Navigation("Reviews");
-                });
-
-            modelBuilder.Entity("ClincManagement.API.Entities.Doctor", b =>
-                {
-                    b.Navigation("Appointments");
-
-                    b.Navigation("Operations");
 
                     b.Navigation("Reviews");
                 });
@@ -1594,14 +1329,13 @@ namespace ClincManagement.API.Migrations
                     b.Navigation("Stays");
                 });
 
-            modelBuilder.Entity("ClincManagement.API.Entities.ServiceType", b =>
+            modelBuilder.Entity("Doctor", b =>
                 {
-                    b.Navigation("Invoices");
-                });
+                    b.Navigation("Appointments");
 
-            modelBuilder.Entity("ClincManagement.API.Entities.Stay", b =>
-                {
-                    b.Navigation("ActivityLog");
+                    b.Navigation("Operations");
+
+                    b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618
         }

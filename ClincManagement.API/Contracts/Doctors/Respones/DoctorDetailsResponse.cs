@@ -7,12 +7,12 @@
         public string Specialization { get; init; } = string.Empty;
         public string ClinicName { get; init; } = string.Empty;
         public decimal Price { get; init; }
-        public List<string> Languages { get; init; } = new();
+        public string Languages { get; init; }
         public int YearsOfExperience { get; init; }
         public string Bio { get; init; } = string.Empty;
         public double Rating { get; init; }
         public int ReviewsCount { get; init; }
-        public IFormFile? ProfileImageUrl { get; init; }
+        public string ProfileImageUrl { get; init; } 
         public List<AppointmentResponse> Appointments { get; init; } = new();
         public List<ReviewResponse> Reviews { get; init; } = new();
     }
@@ -26,6 +26,7 @@
 
     public record ReviewResponse
     {
+        public Guid Id { get; init; }
         public string PatientName { get; init; } = string.Empty;
         public int Rating { get; init; }
         public string Comment { get; init; } = string.Empty;

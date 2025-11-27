@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Contracts\Clinic\Requests\" />
-    <Folder Include="Contracts\Doctors\Requests\" />
     <Folder Include="Contracts\Operation\Requests\" />
     <Folder Include="wwwroot\uploads\patients\" />
   </ItemGroup>

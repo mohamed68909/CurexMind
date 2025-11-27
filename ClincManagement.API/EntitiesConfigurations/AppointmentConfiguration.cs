@@ -36,24 +36,8 @@
             builder.HasIndex(d => d.AppointmentDate).HasDatabaseName("IX_AppointmentDate");
             builder.HasIndex(d => d.Status).HasDatabaseName("IX_AppointmentStatus");
 
-            builder.HasData(
-                new Appointment
-                {
-                    Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
-                    PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222"), // ✅ تعديل
-                    ClinicId = Guid.Parse("33333333-3333-3333-3333-333333333333"),
-                    AppointmentDate = new DateTime(2025, 09, 18),
-                    AppointmentTime = "10:00 AM",
-                    Duration = 30,
-                    Notes = "General check-up",
-                    Type = AppointmentType.First_Visit,
-                    Status = AppointmentStatus.Confirmed,
-                    UpdatedDate = new DateTime(2025, 09, 15),
-                    CreatedById = "system",
-                    IsDeleted = false
-                }
-            );
+   
+            
         }
     }
 }

@@ -43,7 +43,13 @@ namespace ClincManagement.API.Extentions
                   throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlServer(connectionString, sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 10,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
+                }));
 
             services.AddIdentity<ApplicationUser, ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -109,9 +115,10 @@ namespace ClincManagement.API.Extentions
             services.AddScoped<IJwtProvider, JwtProvider>();
             services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IUserHelpers, UserHelpers>();
-            services.AddScoped<IStayService, StayService>();
+           // services.AddScoped<IStayService, StayService>();
             services.AddScoped<IInvoiceService, InvoiceService>();
             services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IImageFileService, ImageFileService>();
 
             return services;
         }

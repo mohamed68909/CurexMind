@@ -22,7 +22,7 @@ namespace ClincManagement.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = DefaultRoles.Admin.Name)]
+     
         [ProducesResponseType(typeof(PagedAppointmentResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllAppointments(
             [FromQuery] int page = 1,
@@ -34,7 +34,7 @@ namespace ClincManagement.API.Controllers
         }
 
         [HttpGet("patient/{patientId}")]
-        [Authorize]
+        
         [ProducesResponseType(typeof(AppointmentDetailsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAppointmentsByPatientId(
@@ -46,7 +46,7 @@ namespace ClincManagement.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = DefaultRoles.Admin.Name)]
+        
         [ProducesResponseType(typeof(AppointmentDto), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateAppointment(
             [FromBody] CreateAppointmentDto request,
@@ -59,7 +59,7 @@ namespace ClincManagement.API.Controllers
         }
 
         [HttpPost("patient/{patientId}/book")]
-        [Authorize]
+   
         [ProducesResponseType(typeof(ResponserAppointmentDto), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateAppointmentPatient(
             [FromRoute] Guid patientId,
@@ -73,7 +73,7 @@ namespace ClincManagement.API.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = DefaultRoles.Admin.Name)]
+      
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> UpdateAppointment(
             [FromBody] UpdateAppointmentDto request,
@@ -84,7 +84,7 @@ namespace ClincManagement.API.Controllers
         }
 
         [HttpDelete("{appointmentId}")]
-        [Authorize(Roles = DefaultRoles.Admin.Name)]
+       
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteAppointment(
             [FromRoute] Guid appointmentId,

@@ -9,7 +9,13 @@ namespace ClincManagement.API.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+            modelBuilder.Entity<Patient>()
+                  .HasQueryFilter(x => !x.IsDeleted);
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Doctor>()
+                  .HasQueryFilter(x => !x.IsDeleted);
+            base.OnModelCreating(modelBuilder);
+         
 
 
 
@@ -25,9 +31,7 @@ namespace ClincManagement.API.Data
 
         public DbSet<Review> Reviews => Set<Review>();
         public DbSet<Payment> Payments => Set<Payment>();
-        public DbSet<StayActivity> StayActivities => Set<StayActivity>();
-        public DbSet<MedicalService> MedicalServices => Set<MedicalService>();
-        public DbSet<ServiceType> ServiceTypes => Set<ServiceType>();
+       
 
 
 

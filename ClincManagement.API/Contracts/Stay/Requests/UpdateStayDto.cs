@@ -1,14 +1,18 @@
 ﻿namespace ClincManagement.API.Contracts.Stay.Requests
 {
-    public class UpdateStayDto
+    public class UpdateStayRequest
     {
-        public List<Guid>? ServiceIds { get; set; }
-        public string? Department { get; set; }
-        public string? StayType { get; set; }
-        public string? Status { get; set; }
-        public string? RoomNumber { get; set; }
-        public string? BedNumber { get; set; }
-        public DateTime? CheckOutDate { get; set; }
+        public string Department { get; set; } = string.Empty;
+        public string RoomNumber { get; set; } = string.Empty;
+        public string BedNumber { get; set; } = string.Empty;
+
+        public StayType StayType { get; set; }
+        public StayStatus Status { get; set; }
+
+        public DateTime StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+
         public string? Notes { get; set; }
     }
+
 }

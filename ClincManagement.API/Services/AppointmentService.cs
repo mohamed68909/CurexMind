@@ -2,8 +2,9 @@
 using ClincManagement.API.Contracts.Appinments.Requests;
 using ClincManagement.API.Contracts.Appinments.Respones;
 using ClincManagement.API.Contracts.Appointments.Responses;
-using ClincManagement.API.Errors.ClincManagement.API.Errors;
+using ClincManagement.API.Errors;
 using ClincManagement.API.Services.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClincManagement.API.Services
 {
@@ -16,11 +17,12 @@ namespace ClincManagement.API.Services
             _context = context;
         }
 
-
         public async Task<Result<AppointmentDto>> CreateAppointmentAsync(CreateAppointmentDto request, CancellationToken cancel)
         {
+            var patient = await _context.Patients
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.PatientId == request.PatientId, cancel);
 
-            var patient = await _context.Patients.FindAsync(request.PatientId);
             var doctor = await _context.Doctors
                 .Include(d => d.Clinic)
                 .FirstOrDefaultAsync(d => d.Id == request.DoctorId, cancel);
@@ -50,7 +52,8 @@ namespace ClincManagement.API.Services
                 Status = request.Status ?? AppointmentStatus.Waiting,
                 Notes = request.Notes,
                 UpdatedDate = DateTime.UtcNow,
-                IsDeleted = false
+                IsDeleted = false,
+                CreatedById = request.PatientId.ToString()
             };
 
             _context.Appointments.Add(appointment);
@@ -59,44 +62,26 @@ namespace ClincManagement.API.Services
             var dto = new AppointmentDto
             {
                 AppointmentId = appointment.Id,
-                PatientName = patient.User.FullName,
-                DoctorName = doctor.FullName,
-                ClinicName = doctor.Clinic.Name,
+                PatientName = patient.User?.FullName ?? "No Patient",
+                DoctorName = doctor.FullName ?? "No Doctor",
+                ClinicName = doctor.Clinic?.Name ?? "No Clinic",
                 AppointmentType = appointment.Type.ToString(),
                 Status = appointment.Status.ToString(),
                 Date = appointment.AppointmentDate,
                 Time = appointment.AppointmentTime,
                 DurationMinutes = appointment.Duration,
-                Notes = appointment.Notes
+                Notes = appointment.Notes,
             };
 
             return Result.Success(dto);
         }
 
-        // Update Appointment
         public async Task<Result> UpdateAppointmentAsync(UpdateAppointmentDto request, CancellationToken cancel)
         {
             var appointment = await _context.Appointments
                 .FirstOrDefaultAsync(a => a.Id == request.AppointmentId && !a.IsDeleted, cancel);
 
             if (appointment == null) return Result.Failure(AppointmentErrors.NotFound);
-
-            var patientExists = await _context.Patients.AnyAsync(p => p.PatientId == request.PatientId, cancel);
-            if (!patientExists) return Result.Failure(AppointmentErrors.InvalidPatient);
-
-            var doctorExists = await _context.Doctors.AnyAsync(d => d.Id == request.DoctorId, cancel);
-            if (!doctorExists) return Result.Failure(AppointmentErrors.InvalidDoctor);
-
-            if (request.Date < DateTime.UtcNow) return Result.Failure(AppointmentErrors.InvalidDate);
-
-            var conflict = await _context.Appointments.AnyAsync(a =>
-                a.Id != request.AppointmentId &&
-                a.DoctorId == request.DoctorId &&
-                a.AppointmentDate == request.Date &&
-                a.AppointmentTime == request.Time &&
-                !a.IsDeleted, cancel);
-
-            if (conflict) return Result.Failure(AppointmentErrors.AlreadyExists);
 
             appointment.PatientId = request.PatientId;
             appointment.DoctorId = request.DoctorId;
@@ -115,7 +100,6 @@ namespace ClincManagement.API.Services
             return Result.Success();
         }
 
-
         public async Task<Result> DeleteAppointmentAsync(Guid appointmentId, CancellationToken cancel)
         {
             var appointment = await _context.Appointments.FindAsync(appointmentId);
@@ -130,14 +114,14 @@ namespace ClincManagement.API.Services
             return Result.Success();
         }
 
-
         public async Task<Result<PagedAppointmentResponse>> GetAllAppointmentsAsync(int page, int pageSize, CancellationToken cancel)
         {
             var query = _context.Appointments
                 .Where(a => !a.IsDeleted)
                 .Include(a => a.Patient)
+                    .ThenInclude(p => p.User)
                 .Include(a => a.Doctor)
-                .ThenInclude(d => d.Clinic);
+                    .ThenInclude(d => d.Clinic);
 
             var totalCount = await query.CountAsync(cancel);
             if (totalCount == 0) return Result.Failure<PagedAppointmentResponse>(AppointmentErrors.NotFound);
@@ -151,9 +135,9 @@ namespace ClincManagement.API.Services
 
             var data = appointments.Select(a => new ResponseDetailsAllAppointment(
                 AppointmentId: a.Id,
-                PatientName: a.Patient.User.FullName,
-                DoctorName: a.Doctor.FullName,
-                Clinic: a.Doctor.Clinic.Name,
+                PatientName: a.Patient?.User?.FullName ?? "No Patient",
+                DoctorName: a.Doctor?.FullName ?? "No Doctor",
+                Clinic: a.Doctor?.Clinic?.Name ?? "No Clinic",
                 AppointmentDate: a.AppointmentDate,
                 AppointmentTime: a.AppointmentTime,
                 AppointmentType: a.Type,
@@ -171,12 +155,11 @@ namespace ClincManagement.API.Services
             return Result.Success(response);
         }
 
-
         public async Task<Result<AppointmentDetailsResponse>> GetAppointmentsByPatientIdAsync(Guid patientId, CancellationToken cancel)
         {
             var appointment = await _context.Appointments
                 .Include(a => a.Doctor)
-                .ThenInclude(d => d.Clinic)
+                    .ThenInclude(d => d.Clinic)
                 .FirstOrDefaultAsync(a => a.PatientId == patientId && !a.IsDeleted, cancel);
 
             if (appointment == null) return Result.Failure<AppointmentDetailsResponse>(AppointmentErrors.NotFound);
@@ -190,8 +173,8 @@ namespace ClincManagement.API.Services
                 PaymentStatus = "",
                 DoctorDetails = new DoctorDetails
                 {
-                    Name = appointment.Doctor.FullName,
-                    ClinicName = appointment.Doctor.Clinic.Name
+                    Name = appointment.Doctor?.FullName ?? "No Doctor",
+                    ClinicName = appointment.Doctor?.Clinic?.Name ?? "No Clinic"
                 },
                 BookingTime = new BookingTime
                 {
@@ -209,7 +192,6 @@ namespace ClincManagement.API.Services
 
             return Result.Success(response);
         }
-
 
         public async Task<Result<ResponserAppointmentDto>> CreateAppointmentPatientAsync(BookAppointmentRequest request, Guid patientId, CancellationToken cancel)
         {

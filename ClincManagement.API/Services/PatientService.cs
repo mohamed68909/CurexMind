@@ -1,336 +1,421 @@
 ﻿using ClincManagement.API.Abstractions;
 using ClincManagement.API.Contracts.Invoice.Respones;
-
 using ClincManagement.API.Contracts.Operation.Response;
-
 using ClincManagement.API.Contracts.Patient.Requests;
 using ClincManagement.API.Contracts.Patient.Respones;
 using ClincManagement.API.Contracts.Patient.Responses;
-using ClincManagement.API.Contracts.Stay.Responses;
+
+using ClincManagement.API.Entities;
 using ClincManagement.API.Errors;
 using ClincManagement.API.Services.Interface;
-using Mapster;
+using ClincManagement.API.Settings;
 using MapsterMapper;
-using Error = ClincManagement.API.Abstractions.Error;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using PatientResponseDto = ClincManagement.API.Contracts.Patient.Respones.PatientResponseDto;
+
 
 public class PatientService : IPatientService
 {
     private readonly ApplicationDbContext _context;
-    private readonly IMapper _mapper;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<PatientService> _logger;
+    private readonly IImageFileService _imageFileService;
 
     public PatientService(
-    ApplicationDbContext context,
-    IMapper mapper,
-    UserManager<ApplicationUser> userManager,
-    ILogger<PatientService> logger)
+        ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager,
+        ILogger<PatientService> logger,
+        IImageFileService imageFileService)  
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+        _context = context;
+        _userManager = userManager;
         _logger = logger;
+        _imageFileService = imageFileService;
     }
 
+   //is Sucess
     public async Task<Result<PatientCreateResponseDto>> CreateAsync(
-    string userId,
-    PatientRequestDto request,
-    CancellationToken cancellationToken = default)
+        string UserId, IFormFile? profileImage, PatientRequestDto request,
+        CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting patient creation for Phone: {Phone}, Email: {Email}", request.PhoneNumber, request.Email);
-
-        var existingUser = await _userManager.Users
-            .FirstOrDefaultAsync(u => u.PhoneNumber == request.PhoneNumber, cancellationToken);
-
-        if (existingUser is not null)
-            return Result.Failure<PatientCreateResponseDto>(UserErrors.DuplicatePhoneNumber);
-
-        if (!string.IsNullOrEmpty(request.NationalId))
-        {
-            var nationalIdExists = await _context.Patients
-                .AnyAsync(p => p.NationalId == request.NationalId, cancellationToken);
-
-            if (nationalIdExists)
-                return Result.Failure<PatientCreateResponseDto>(PatientErrors.DuplicateNationalId);
-        }
-
-        if (!string.IsNullOrEmpty(request.Email))
-        {
-            var emailExists = await _userManager.FindByEmailAsync(request.Email);
-            if (emailExists is not null)
-                return Result.Failure<PatientCreateResponseDto>(UserErrors.DuplicatedEmail);
-        }
-
-        var user = request.Adapt<ApplicationUser>();
-        var identityResult = await _userManager.CreateAsync(user);
-
-        if (!identityResult.Succeeded)
-        {
-            var error = identityResult.Errors.FirstOrDefault()?.Description ?? "Failed to create user";
-            _logger.LogWarning("Failed to create ApplicationUser. Error: {Error}", error);
-
-            return Result.Failure<PatientCreateResponseDto>(
-                new Error("User.CreateFailed", error, StatusCodes.Status400BadRequest));
-        }
-
-        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "patients");
-        Directory.CreateDirectory(uploadsFolder);
-
-        string? storedImageName = null;
-
+        using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
         try
         {
-            if (request.ProfileImageUrl is not null)
-            {
-                storedImageName = $"{Guid.NewGuid()}{Path.GetExtension(request.ProfileImageUrl.FileName)}";
-                var filePath = Path.Combine(uploadsFolder, storedImageName);
+         
+            if (await _userManager.Users.AnyAsync(u => u.PhoneNumber == request.PhoneNumber))
+                return Result.Failure<PatientCreateResponseDto>(UserErrors.DuplicatePhoneNumber);
 
-                await using var stream = new FileStream(filePath, FileMode.Create);
-                await request.ProfileImageUrl.CopyToAsync(stream, cancellationToken);
+            if (!string.IsNullOrEmpty(request.Email) &&
+                await _userManager.FindByEmailAsync(request.Email) != null)
+                return Result.Failure<PatientCreateResponseDto>(UserErrors.DuplicatedEmail);
+
+            if (!string.IsNullOrEmpty(request.NationalId) &&
+                await _context.Patients.AnyAsync(p => p.NationalId == request.NationalId))
+                return Result.Failure<PatientCreateResponseDto>(PatientErrors.DuplicateNationalId);
+
+            var user = new ApplicationUser
+            {
+                FullName = request.FullName,
+                Email = request.Email,
+                UserName = request.UserName,
+                PhoneNumber = request.PhoneNumber,
+                EmailConfirmed = true
+            };
+
+            var identityResult = await _userManager.CreateAsync(user);
+            if (!identityResult.Succeeded)
+            {
+                var err = identityResult.Errors.FirstOrDefault()?.Description;
+                return Result.Failure<PatientCreateResponseDto>(
+                    new Error("User.CreateFailed", err ?? "Failed to create user"));
             }
 
-            var patient = request.Adapt<Patient>();
-            patient.PatientId = Guid.NewGuid();
-            patient.UserId = user.Id;
-
-            if (request.ProfileImageUrl is not null)
+            
+            if (profileImage != null)
             {
-                patient.User.ProfileImageUrl = new UploadedFile
-                {
-                    FileName = request.ProfileImageUrl.FileName,
-                    StoredFileName = storedImageName,
-                    FileExtension = Path.GetExtension(request.ProfileImageUrl.FileName),
-                    ContentType = request.ProfileImageUrl.ContentType
-                };
+                var uploadedFile = await _imageFileService.UploadAsync(profileImage, "uploads/patients");
+                user.ProfileImage = uploadedFile;
             }
 
+          
+            var patient = new Patient
+            {
+                PatientId = Guid.NewGuid(),
+                UserId = user.Id,
+                Gender = request.Gender,
+                SocialStatus = request.SocialStatus,
+                DateOfBirth = request.DateOfBirth,
+                NationalId = request.NationalId,
+                Address = request.Address,
+                Notes = request.Notes,
+                CreatedById = "System"
+            };
             await _context.Patients.AddAsync(patient, cancellationToken);
 
-            if (request.InitialBooking is not null)
+            
+            if (request.InitialBooking != null)
             {
-                var appointment = request.InitialBooking.Adapt<Appointment>();
-                appointment.Id = Guid.NewGuid();
-                appointment.PatientId = patient.PatientId;
-
+                var appointment = new Appointment
+                {
+                    Id = Guid.NewGuid(),
+                    PatientId = patient.PatientId,
+                    ClinicId = request.InitialBooking.ClinicId,
+                    DoctorId = request.InitialBooking.DoctorId,
+                    Type = request.InitialBooking.AppointmentType,
+                    AppointmentDate = request.InitialBooking.AppointmentDate ?? DateTime.UtcNow,
+                    Notes = request.InitialBooking.Notes,
+                    CreatedById = "System"
+                };
                 await _context.Appointments.AddAsync(appointment, cancellationToken);
             }
 
             await _context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
 
-            var response = patient.Adapt<PatientCreateResponseDto>();
-
-            _logger.LogInformation("Patient created successfully with ID: {PatientId}", patient.PatientId);
-
-            return Result.Success(response);
+            return Result.Success(new PatientCreateResponseDto(
+                patient.PatientId,
+                user.FullName,
+                user.PhoneNumber!,
+                user.Email,
+                patient.Address,
+                patient.Gender.ToString(),
+                patient.DateOfBirth,
+                patient.SocialStatus.ToString(),
+                patient.Notes,
+                user.ProfileImage.FileName
+            ));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error while creating patient");
+            await transaction.RollbackAsync(cancellationToken);
 
-            if (!string.IsNullOrEmpty(storedImageName))
-            {
-                var filePath = Path.Combine(uploadsFolder, storedImageName);
-                if (File.Exists(filePath))
-                    File.Delete(filePath);
-            }
+            if (await _userManager.FindByNameAsync(request.UserName) is ApplicationUser createdUser)
+                await _userManager.DeleteAsync(createdUser);
 
+            _logger.LogError(ex, "Error creating patient");
             return Result.Failure<PatientCreateResponseDto>(
-                new Error("Patient.CreateFailed", "Unexpected error occurred while creating patient"));
+                new Error("Patient.Create.Error", ex.Message));
         }
     }
 
-    public async Task<Result> Delete(Guid id, CancellationToken cancellationToken = default)
-    {
-        var patient = await _context.Patients
-            .Include(p => p.User)
-            .FirstOrDefaultAsync(p => p.PatientId == id, cancellationToken);
 
-        if (patient is null)
-            return Result.Failure(PatientErrors.NotFound);
 
-        patient.IsDeleted = true;
-        patient.DeletedOn = DateTime.UtcNow;
-
-        _context.Patients.Update(patient);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        return Result.Success();
-    }
-
-    public async Task<Result<IEnumerable<ResponseAllAppointmentPatient>>> GetAllAppointmentsByPatientIdAsync(Guid patientId)
-    {
-        var patient = await _context.Patients
-            .FirstOrDefaultAsync(p => p.PatientId == patientId);
-
-        if (patient == null)
-        {
-            return Result.Failure<IEnumerable<ResponseAllAppointmentPatient>>(PatientErrors.NotFound);
-        }
-
-        var appointments = await _context.Appointments
-            .Where(a => a.PatientId == patientId)
-            .Include(a => a.Doctor)
-            .ToListAsync();
-
-        if (appointments == null || !appointments.Any())
-        {
-            return Result.Success(Enumerable.Empty<ResponseAllAppointmentPatient>());
-        }
-
-        var response = appointments.Adapt<IEnumerable<ResponseAllAppointmentPatient>>();
-
-        return Result.Success(response);
-    }
-
+    //is Sucess
     public async Task<Result<PatientResponseDto>> GetPatientByIdAsync(Guid id)
     {
-        var patient = await _context.Patients
-            .Include(p => p.User)
-                .ThenInclude(u => u.ProfileImageUrl)
-            .FirstOrDefaultAsync(p => p.PatientId == id);
+        var p = await _context.Patients
+            .Include(x => x.User).ThenInclude(x => x.ProfileImage)
+            .FirstOrDefaultAsync(x => x.PatientId == id);
 
-        if (patient is null)
-        {
-            _logger.LogWarning("Patient with ID {Id} not found.", id);
-            return Result.Failure<PatientResponseDto>(PatientErrors.NotFound);
-        }
+        if (p == null) return Result.Failure<PatientResponseDto>(PatientErrors.NotFound);
 
-        var response = patient.Adapt<PatientResponseDto>();
-        return Result.Success(response);
+        return Result.Success(
+            new PatientResponseDto(
+                p.PatientId,
+                p.User.FullName,
+                p.Gender,
+                p.DateOfBirth,
+                CalculateAge(p.DateOfBirth),
+                p.SocialStatus,
+                p.User.PhoneNumber!,
+                p.User.Email!,
+                p.NationalId,
+                p.Address,
+                p.Notes,
+                p.User.ProfileImage?.StoredFileName,
+                p.CreatedOn
+            )
+        );
     }
 
-    public async Task<Result<PagedPatientResponse>> GetPatientsAsync(string? search, int page = 1, int pageSize = 10)
+    public async Task<Result<PatientResponseDto?>> UpdatePatientAsync(Guid id, IFormFile? newProfileImage, PatientRequestDto request)
     {
-        if (page < 1) page = 1;
-        if (pageSize < 1 || pageSize > 50) pageSize = 10;
+        var p = await _context.Patients
+            .Include(x => x.User)
+            .ThenInclude(u => u.ProfileImage)
+            .FirstOrDefaultAsync(x => x.PatientId == id);
 
-        IQueryable<Patient> query = _context.Patients.Include(p => p.User);
+        if (p == null)
+            return Result.Failure<PatientResponseDto?>(PatientErrors.NotFound);
 
+        if (p.User.PhoneNumber != request.PhoneNumber &&
+            await _userManager.Users.AnyAsync(u => u.PhoneNumber == request.PhoneNumber))
+            return Result.Failure<PatientResponseDto?>(UserErrors.DuplicatePhoneNumber);
+
+        if (p.User.Email != request.Email &&
+            await _userManager.FindByEmailAsync(request.Email) != null)
+            return Result.Failure<PatientResponseDto?>(UserErrors.DuplicatedEmail);
+
+        if (p.NationalId != request.NationalId &&
+            await _context.Patients.AnyAsync(x => x.NationalId == request.NationalId))
+            return Result.Failure<PatientResponseDto?>(PatientErrors.DuplicateNationalId);
+
+
+        // Update basic fields
+        p.User.FullName = request.FullName;
+        p.User.Email = request.Email;
+        p.User.PhoneNumber = request.PhoneNumber;
+        p.Gender = request.Gender;
+        p.Address = request.Address;
+        p.DateOfBirth = request.DateOfBirth;
+        p.SocialStatus = request.SocialStatus;
+        p.Notes = request.Notes;
+
+        // Handle profile image update
+        if (newProfileImage != null)
+        {
+            // Delete old image if exists
+            if (p.User.ProfileImage != null)
+            {
+                _imageFileService.Delete(p.User.ProfileImage, "uploads/patients");
+            }
+
+            // Upload new one
+            var uploadedFile = await _imageFileService.UploadAsync(newProfileImage, "uploads/patients");
+            p.User.ProfileImage = uploadedFile;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Result.Success<PatientResponseDto?>(
+            new PatientResponseDto(
+                p.PatientId,
+                p.User.FullName,
+                p.Gender,
+                p.DateOfBirth,
+                CalculateAge(p.DateOfBirth),
+                p.SocialStatus,
+                p.User.PhoneNumber!,
+                p.User.Email!,
+                p.NationalId,
+                p.Address,
+                p.Notes,
+                p.User.ProfileImage?.StoredFileName,
+                p.CreatedOn
+            )
+        );
+    }
+    //is sucess
+    public async Task<Result> Delete(Guid id, CancellationToken cancellationToken = default)
+    {
+        var p = await _context.Patients
+            .Include(x => x.User)
+            .ThenInclude(u => u.ProfileImage)
+            .FirstOrDefaultAsync(x => x.PatientId == id, cancellationToken);
+
+        if (p == null)
+            return Result.Failure(PatientErrors.NotFound);
+
+      
+        if (p.User?.ProfileImage != null)
+        {
+            _imageFileService.Delete(p.User.ProfileImage, "uploads/patients");
+        }
+
+      
+        p.IsDeleted = true;
+        p.DeletedOn = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
+        return Result.Success(new { Message = "Patient deleted successfully" });
+    }
+
+
+    //is sucsses
+    public async Task<Result<PagedPatientResponse>> GetPatientsAsync(
+      string? search,
+      int page = 1,
+      int pageSize = 10)
+    {
+        IQueryable<Patient> q = _context.Patients
+            .Include(x => x.User);
+
+        // Search
         if (!string.IsNullOrWhiteSpace(search))
         {
-            string normalizedSearch = search.Trim().ToLower();
-            query = query.Where(p =>
-                p.User.FullName.ToLower().Contains(normalizedSearch) ||
-                p.User.PhoneNumber.Contains(normalizedSearch) ||
-                (p.NationalId != null && p.NationalId.Contains(normalizedSearch))
+            search = search.ToLower();
+
+            q = q.Where(x =>
+                x.User.FullName.ToLower().Contains(search) ||
+                x.User.PhoneNumber.Contains(search) ||
+                x.NationalId.Contains(search)
             );
         }
 
-        int totalCount = await query.CountAsync();
-        int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+        int total = await q.CountAsync();
 
-        var patients = await query
-            .OrderBy(p => p.User.FullName)
+        var data = await q
+            .OrderBy(x => x.User.FullName)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
+        var list = data.Select(x => new PatientListResponseDto(
+            x.PatientId,
+            x.User.FullName,
+            x.Gender,
+            CalculateAge(x.DateOfBirth),
+            x.User.PhoneNumber,
+            x.Address
+        ));
 
-        var patientDtos = patients.Adapt<IEnumerable<PatientListResponseDto>>();
-
-        var response = new PagedPatientResponse
-        (
-            Data: patientDtos,
-            Page: page,
-            PageSize: pageSize,
-            TotalCount: totalCount,
-            TotalPages: totalPages
+        return Result.Success(
+            new PagedPatientResponse(
+                list,
+                total,
+                page,
+                pageSize,
+                (int)Math.Ceiling(total / (double)pageSize)
+            )
         );
-
-        return Result.Success(response);
     }
 
-    public async Task<Result<PatientResponseDto?>> UpdatePatientAsync(Guid id, PatientRequestDto request)
+
+    //public async Task<Result<IEnumerable<ResponseAllAppointmentPatient>>> GetAllAppointmentsByPatientIdAsync(Guid patientId)
+    //{
+    //    var p = await _context.Patients.FirstOrDefaultAsync(x => x.PatientId == patientId);
+    //    if (p == null) return Result.Failure<IEnumerable<ResponseAllAppointmentPatient>>(PatientErrors.NotFound);
+
+    //    var appointments = await _context.Appointments
+    //        .Include(a => a.Doctor)
+    //        .Include(a => a.Invoice)
+    //        .Where(a => a.PatientId == patientId)
+    //        .OrderByDescending(a => a.AppointmentDate)
+    //        .ToListAsync();
+
+    //    var mapped = appointments.Select(a => new ResponseAllAppointmentPatient
+    //    {
+    //        AppointmentId = a.Id,
+    //        DoctorName = a.Doctor?.FullName ?? "Unknown",
+    //        Specialization = a.Doctor?.Specialization ?? "N/A",
+    //        Date = a.AppointmentDate,
+    //        Time = a.AppointmentTime,
+    //        VisitType = a.Type.ToString(),
+    //        Status = a.Status.ToString(),
+    //        PaymentStatus = a.Invoice?.Status.ToString() ?? "N/A",
+    //        InvoiceUrl = a.Invoice != null ? $"/invoices/{a.Invoice.StoredFileName}" : null
+    //    });
+
+    //    return Result.Success(mapped);
+    //}
+
+
+    //public async Task<Result<IEnumerable<ResponsePatientInvoice>>> GetAllInvoicesByPatientIdAsync(Guid patientId)
+    //{
+    //    var p = await _context.Patients.FirstOrDefaultAsync(x => x.PatientId == patientId);
+    //    if (p == null) return Result.Failure<IEnumerable<ResponsePatientInvoice>>(PatientErrors.NotFound);
+
+    //    var invoices = await _context.Invoices
+    //        .Where(x => x.PatientId == patientId)
+    //        .OrderByDescending(x => x.InvoiceDate)
+    //        .ToListAsync();
+
+    //    var mapped = invoices.Select(i => new ResponsePatientInvoice(
+    //        i.InvoiceNumber,
+    //        i.InvoiceDate.ToString("yyyy-MM-dd"),
+    //        i.FinalAmountEGP,
+    //        i.PaidAmountEGP,
+    //        i.FinalAmountEGP - i.PaidAmountEGP,
+    //        i.Status.ToString()
+    //    ));
+
+    //    return Result.Success(mapped);
+    //}
+
+    //public async Task<Result<IEnumerable<ResponsePatientStay>>> GetAllStaysByPatientIdAsync(Guid patientId)
+    //{
+    //    var p = await _context.Patients.FirstOrDefaultAsync(x => x.PatientId == patientId);
+    //    if (p == null) return Result.Failure<IEnumerable<ResponsePatientStay>>(PatientErrors.NotFound);
+
+    //    var stays = await _context.Stays
+    //        .Where(x => x.PatientId == patientId)
+    //        .OrderByDescending(x => x.CheckInDate)
+    //        .ToListAsync();
+
+    //    var mapped = stays.Select(s => new ResponsePatientStay(
+    //        $"{s.RoomNumber}/{s.BedNumber}",
+    //        s.CheckInDate.ToString("yyyy-MM-dd HH:mm"),
+    //        s.CheckOutDate?.ToString("yyyy-MM-dd HH:mm") ?? "N/A",
+    //        s.TotalCost
+    //    ));
+
+    //    return Result.Success(mapped);
+    //}
+
+
+    //public async Task<Result<IEnumerable<ResponsePatientOperation>>> GetAllOperationsByPatientIdAsync(Guid patientId)
+    //{
+    //    var p = await _context.Patients.FirstOrDefaultAsync(x => x.PatientId == patientId);
+    //    if (p == null) return Result.Failure<IEnumerable<ResponsePatientOperation>>(PatientErrors.NotFound);
+
+    //    var ops = await _context.Operations
+    //        .Include(x => x.Doctor)
+    //        .Where(x => x.PatientId == patientId)
+    //        .OrderByDescending(x => x.Date)
+    //        .ToListAsync();
+
+    //    var mapped = ops.Select(o =>
+    //        new ResponsePatientOperation(
+    //            o.Name,
+    //            o.Date.ToString("yyyy-MM-dd"),
+    //            o.Doctor?.FullName ?? "Unknown",
+    //            o.Tools,
+    //            $"{o.Cost:C} - {o.Notes}"
+    //        )
+    //    );
+
+    //    return Result.Success(mapped);
+    //}
+
+    //// ----------------------------------------------------------
+    private static int CalculateAge(DateTime dob)
     {
-        var patient = await _context.Patients
-            .Include(p => p.User)
-            .FirstOrDefaultAsync(p => p.PatientId == id);
-
-        if (patient is null)
-        {
-            return Result.Failure<PatientResponseDto?>(PatientErrors.NotFound);
-        }
-
-        if (patient.User.PhoneNumber != request.PhoneNumber)
-        {
-            var phoneExists = await _userManager.Users.AnyAsync(u => u.PhoneNumber == request.PhoneNumber && u.Id != patient.UserId);
-            if (phoneExists) return Result.Failure<PatientResponseDto?>(UserErrors.DuplicatePhoneNumber);
-        }
-
-        if (patient.User.Email != request.Email && !string.IsNullOrEmpty(request.Email))
-        {
-            var emailExists = await _userManager.FindByEmailAsync(request.Email);
-            if (emailExists is not null && emailExists.Id != patient.UserId) return Result.Failure<PatientResponseDto?>(UserErrors.DuplicatedEmail);
-        }
-
-        if (patient.NationalId != request.NationalId && !string.IsNullOrEmpty(request.NationalId))
-        {
-            var nationalIdExists = await _context.Patients.AnyAsync(p => p.NationalId == request.NationalId && p.PatientId != id);
-            if (nationalIdExists) return Result.Failure<PatientResponseDto?>(PatientErrors.DuplicateNationalId);
-        }
-
-        request.Adapt(patient.User);
-        request.Adapt(patient);
-
-        _context.Patients.Update(patient);
-        await _context.SaveChangesAsync();
-
-        var response = patient.Adapt<PatientResponseDto>();
-        return Result.Success(response);
+        var today = DateTime.Today;
+        int age = today.Year - dob.Year;
+        if (dob > today.AddYears(-age)) age--;
+        return age;
     }
 
-    public async Task<Result<IEnumerable<ResponsePatientInvoice>>> GetAllInvoicesByPatientIdAsync(Guid patientId)
-    {
-        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.PatientId == patientId);
-        if (patient is null)
-        {
-            return Result.Failure<IEnumerable<ResponsePatientInvoice>>(PatientErrors.NotFound);
-        }
-
-        var invoices = await _context.Invoices
-            .Where(i => i.PatientId == patientId)
-            .OrderByDescending(i => i.CreatedDate)
-            .ToListAsync();
-
-        var response = invoices.Adapt<IEnumerable<ResponsePatientInvoice>>();
-
-        return Result.Success(response);
-    }
-
-    public async Task<Result<IEnumerable<ResponsePatientStay>>> GetAllStaysByPatientIdAsync(Guid patientId)
-    {
-        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.PatientId == patientId);
-        if (patient is null)
-        {
-            return Result.Failure<IEnumerable<ResponsePatientStay>>(PatientErrors.NotFound);
-        }
-
-        var stays = await _context.Stays
-            .Where(s => s.PatientId == patientId)
-            .OrderByDescending(s => s.CheckInDate)
-            .ToListAsync();
-
-        var response = stays.Adapt<IEnumerable<ResponsePatientStay>>();
-
-        return Result.Success(response);
-    }
-
-    public async Task<Result<IEnumerable<ResponsePatientOperation>>> GetAllOperationsByPatientIdAsync(Guid patientId)
-    {
-        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.PatientId == patientId);
-        if (patient is null)
-        {
-            return Result.Failure<IEnumerable<ResponsePatientOperation>>(PatientErrors.NotFound);
-        }
-
-        var operations = await _context.Operations
-            .Where(o => o.PatientId == patientId)
-            .OrderByDescending(o => o.Date)
-            .ToListAsync();
-
-        var response = operations.Adapt<IEnumerable<ResponsePatientOperation>>();
-
-        return Result.Success(response);
-    }
+   
 }

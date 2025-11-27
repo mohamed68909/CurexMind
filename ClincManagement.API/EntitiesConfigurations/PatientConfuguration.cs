@@ -18,11 +18,10 @@
                 .WithOne(u => u.Patient)
                 .HasForeignKey<Patient>(n => n.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
-
+     
             builder.HasIndex(n => n.NationalId)
                 .IsUnique();
 
-            // ✅ Seed Data
             builder.HasData(
                 new Patient
                 {

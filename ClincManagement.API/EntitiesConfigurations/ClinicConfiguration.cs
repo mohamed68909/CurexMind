@@ -24,7 +24,7 @@
             builder.Property(c => c.IsActive)
                    .IsRequired();
 
-            // 🔸 Relationships
+           
             builder.HasMany(c => c.Appointments)
                    .WithOne(a => a.Clinic)
                    .HasForeignKey(a => a.ClinicId)
@@ -35,7 +35,7 @@
                    .HasForeignKey(r => r.ClinicId)
                    .OnDelete(DeleteBehavior.NoAction);
 
-            // 🔸 Indexes
+          
             builder.HasIndex(c => c.Name)
                    .IsUnique()
                    .HasDatabaseName("IX_ClinicName");
@@ -43,7 +43,7 @@
             builder.HasIndex(c => c.IsActive)
                    .HasDatabaseName("IX_ClinicIsActive");
 
-            // 🔸 Seed Data
+            
             builder.HasData(
                 new Clinic
                 {

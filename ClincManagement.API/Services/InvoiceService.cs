@@ -20,11 +20,11 @@ namespace ClinicManagement.API.Services
         {
             var patient = await _context.Patients.FindAsync(request.PatientId);
             var doctor = await _context.Doctors.Include(d => d.Clinic).FirstOrDefaultAsync(d => d.Id == request.DoctorId, cancel);
-            var serviceType = await _context.ServiceTypes.FindAsync(request.ServiceDetails.ServiceTypeId);
+           // var serviceType = await _context.ServiceTypes.FindAsync(request.ServiceDetails.ServiceTypeId);
 
             if (patient == null) return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.InvalidPatient);
             if (doctor == null) return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.InvalidDoctor);
-            if (serviceType == null) return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.ServiceMismatch);
+          //  if (serviceType == null) return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.ServiceMismatch);
 
             var invoice = new Invoice
             {
@@ -36,7 +36,7 @@ namespace ClinicManagement.API.Services
 
                 ServiceTypeId = request.ServiceDetails.ServiceTypeId,
                 VisitDate = request.ServiceDetails.VisitDate,
-                DateTimeVisitTime = request.ServiceDetails.VisitDate,
+                //DateTimeVisitTime = request.ServiceDetails.VisitDate,
                 TotalAmountEGP = request.AmountDetails.TotalAmountEGP,
                 DiscountEGP = request.AmountDetails.DiscountEGP,
                 FinalAmountEGP = request.AmountDetails.FinalAmountEGP,
@@ -52,7 +52,7 @@ namespace ClinicManagement.API.Services
             _context.Invoices.Add(invoice);
             await _context.SaveChangesAsync(cancel);
 
-            invoice.ServiceType = serviceType;
+           // invoice.ServiceType = serviceType;
             invoice.Patient = patient;
             invoice.Doctor = doctor;
 
@@ -64,8 +64,8 @@ namespace ClinicManagement.API.Services
                 ClinicName = doctor.Clinic.Name,
 
                 Patient = new PatientResponseDto { Id = patient.PatientId, Name = patient.User.FullName },
-                Doctor = new DoctorResponseDto { Id = doctor.Id, Name = doctor.FullName },
-                Service = new ServiceResponseDto { Type = invoice.ServiceType.Name, VisitDate = invoice.VisitDate, VisitTime = invoice.VisitTime.ToString() },
+                Doctor = new DoctorResponseDto { Id = doctor.Id, Name = doctor.User.FullName },
+                //Service = new ServiceResponseDto { Type = invoice.ServiceType.Name, VisitDate = invoice.VisitDate, VisitTime = invoice.VisitTime.ToString() },
                 AmountBreakdown = new AmountBreakdownDto
                 {
                     ServiceCharge = invoice.TotalAmountEGP,
@@ -116,7 +116,7 @@ namespace ClinicManagement.API.Services
                 .Where(i => i.Id == invoiceGuid && !i.IsDeleted)
                 .Include(i => i.Patient).ThenInclude(p => p.User)
                 .Include(i => i.Doctor).ThenInclude(d => d.Clinic)
-                .Include(i => i.ServiceType)
+               // .Include(i => i.ServiceType)
                 .FirstOrDefaultAsync(cancel);
 
             var updatedDto = new InvoiceDetailsDto
@@ -126,8 +126,8 @@ namespace ClinicManagement.API.Services
                 PaymentStatus = updatedInvoice.Status.ToString(),
                 ClinicName = updatedInvoice.Doctor.Clinic.Name,
                 Patient = new PatientResponseDto { Id = updatedInvoice.Patient.PatientId, Name = updatedInvoice.Patient.User.FullName },
-                Doctor = new DoctorResponseDto { Id = updatedInvoice.Doctor.Id, Name = updatedInvoice.Doctor.FullName },
-                Service = new ServiceResponseDto { Type = updatedInvoice.ServiceType.Name, VisitDate = updatedInvoice.VisitDate, VisitTime = updatedInvoice.VisitTime.ToString() },
+                Doctor = new DoctorResponseDto { Id = updatedInvoice.Doctor.Id, Name = updatedInvoice.Doctor.User.FullName },
+                //Service = new ServiceResponseDto { Type = updatedInvoice.ServiceType.Name, VisitDate = updatedInvoice.VisitDate, VisitTime = updatedInvoice.VisitTime.ToString() },
                 AmountBreakdown = new AmountBreakdownDto
                 {
                     ServiceCharge = updatedInvoice.TotalAmountEGP,
@@ -177,7 +177,7 @@ namespace ClinicManagement.API.Services
                     query = query.Where(i =>
                         i.Id.ToString().Contains(filterParams.SearchQuery) ||
                         i.Patient.User.FullName.Contains(filterParams.SearchQuery) ||
-                        i.Doctor.FullName.Contains(filterParams.SearchQuery));
+                        i.Doctor.User.FullName.Contains(filterParams.SearchQuery));
                 }
 
                 if (!string.IsNullOrWhiteSpace(filterParams.PaymentStatus))
@@ -202,7 +202,7 @@ namespace ClinicManagement.API.Services
                 InvoiceId = i.Id.ToString(),
                 InvoiceDate = i.InvoiceDate,
                 PatientName = i.Patient.User.FullName,
-                DoctorName = i.Doctor.FullName,
+                DoctorName = i.Doctor.User.FullName,
                 TotalAmount = i.FinalAmountEGP,
                 PaymentStatus = i.Status.ToString()
             }).ToList();
@@ -217,7 +217,7 @@ namespace ClinicManagement.API.Services
                 .Where(i => i.Id == invoiceGuid && !i.IsDeleted)
                 .Include(i => i.Patient).ThenInclude(p => p.User)
                 .Include(i => i.Doctor).ThenInclude(d => d.Clinic)
-                .Include(i => i.ServiceType)
+                //.Include(i => i.ServiceType)
                 .FirstOrDefaultAsync();
 
             if (invoice == null) return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.NotFound);
@@ -229,8 +229,8 @@ namespace ClinicManagement.API.Services
                 PaymentStatus = invoice.Status.ToString(),
                 ClinicName = invoice.Doctor.Clinic.Name,
                 Patient = new PatientResponseDto { Id = invoice.Patient.PatientId, Name = invoice.Patient.User.FullName },
-                Doctor = new DoctorResponseDto { Id = invoice.Doctor.Id, Name = invoice.Doctor.FullName },
-                Service = new ServiceResponseDto { Type = invoice.ServiceType.Name, VisitDate = invoice.VisitDate, VisitTime = invoice.VisitTime.ToString() },
+                Doctor = new DoctorResponseDto { Id = invoice.Doctor.Id, Name = invoice.Doctor.User.FullName },
+               // Service = new ServiceResponseDto { Type = invoice.ServiceType.Name, VisitDate = invoice.VisitDate, VisitTime = invoice.VisitTime.ToString() },
                 AmountBreakdown = new AmountBreakdownDto
                 {
                     ServiceCharge = invoice.TotalAmountEGP,

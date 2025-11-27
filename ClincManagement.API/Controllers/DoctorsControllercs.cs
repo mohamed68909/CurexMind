@@ -1,4 +1,5 @@
 ﻿using ClincManagement.API.Contracts.Clinic.Respones;
+using ClincManagement.API.Contracts.Doctors.Requests;
 using ClincManagement.API.Contracts.Doctors.Respones;
 using ClincManagement.API.Contracts.Review.Requests;
 using ClincManagement.API.Contracts.Review.Respones;
@@ -11,50 +12,87 @@ namespace ClincManagement.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class Doctors : ControllerBase
+    public class DoctorsController : ControllerBase
     {
         private readonly IDoctorService _doctorService;
 
-        public Doctors(IDoctorService doctorService)
+        public DoctorsController(IDoctorService doctorService)
         {
             _doctorService = doctorService;
         }
 
+     
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<DoctorListResponse>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
             var result = await _doctorService.GetAll(cancellationToken);
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
+      
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(DoctorDetailsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetAsync([FromRoute] Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
             var result = await _doctorService.GetAsync(id, cancellationToken);
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
-        [HttpPost("{doctorId:guid}/reviews")]
-        [Authorize]
-        [ProducesResponseType(typeof(AddReviewResponse), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> AddReview([FromRoute] Guid doctorId, [FromBody] AddReviewRequest request, CancellationToken cancellationToken)
+        [HttpPost]
+        [ProducesResponseType(typeof(DoctorDetailsResponse), StatusCodes.Status201Created)]
+        public async Task<IActionResult> CreateDoctor(
+            [FromForm] CreateDoctorRequest request,
+           
+            CancellationToken cancellationToken)
         {
+            var result = await _doctorService.CreateAsync(request,  cancellationToken);
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return result.IsSuccess
+                ? CreatedAtAction(nameof(GetById),
+                    new { id = result.Value.Id }, result.Value)
+                : result.ToProblem();
+        }
 
-            if (string.IsNullOrEmpty(userId))
-                return Problem("User not authenticated", statusCode: StatusCodes.Status401Unauthorized);
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(typeof(DoctorDetailsResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateDoctor(
+            Guid id,
+            [FromForm] UpdateDoctorRequest request,
+         
+            CancellationToken cancellationToken)
+        {
+            var result = await _doctorService.UpdateAsync(id, request, cancellationToken);
+
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        }
+
+     
+        [HttpDelete("{id:guid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeleteDoctor(Guid id, CancellationToken cancellationToken)
+        {
+            var result = await _doctorService.DeleteAsync(id, cancellationToken);
+            return result.IsSuccess ? Ok("Delete is doctor") : result.ToProblem();
+        }
+
+     
+        [HttpPost("{doctorId:guid}/reviews")]
+  
+        [ProducesResponseType(typeof(AddReviewResponse), StatusCodes.Status201Created)]
+        public async Task<IActionResult> AddReview(
+            Guid doctorId,
+            [FromBody] AddReviewRequest request,
+            CancellationToken cancellationToken)
+        {
+            var userId = "ff0a1ace-c169-4a19-9052-354d44d90b37";
+
 
             var result = await _doctorService.AddReview(doctorId, userId, request, cancellationToken);
 
             return result.IsSuccess
-                ? CreatedAtAction(nameof(GetAsync), new { id = doctorId }, result.Value)
+                ? CreatedAtAction(nameof(GetById), new { id = doctorId }, result.Value)
                 : result.ToProblem();
         }
     }

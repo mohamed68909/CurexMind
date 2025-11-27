@@ -32,7 +32,7 @@ namespace ClincManagement.API.Entities
         public Patient Patient { get; set; } = default!;
         public Doctor Doctor { get; set; } = default!;
         public Clinic Clinic { get; set; } = default!;
-        public ServiceType ServiceType { get; set; } = default!;
+    //    public ServiceType ServiceType { get; set; } = default!;
         public Payment? Payment { get; set; }
     }
 }
