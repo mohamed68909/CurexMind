@@ -1,6 +1,6 @@
 ﻿
 using ClincManagement.API.Abstractions;
-using ClincManagement.API.Contracts.Invoice.Respones;
+
 using ClincManagement.API.Contracts.Operation.Response;
 using ClincManagement.API.Contracts.Patient.Requests;
 using ClincManagement.API.Contracts.Patient.Respones;
@@ -25,13 +25,13 @@ namespace ClincManagement.API.Services.Interface
         Task<Result<PatientResponseDto?>> UpdatePatientAsync(Guid id, IFormFile? profileImage, PatientRequestDto request);
 
 
-        //Task<Result<IEnumerable<ResponseAllAppointmentPatient>>> GetAllAppointmentsByPatientIdAsync(Guid patientId);
+        Task<Result<IEnumerable<ResponseAllAppointmentPatient>>> GetAllAppointmentsByPatientIdAsync(Guid patientId);
 
 
-        //Task<Result<IEnumerable<ResponsePatientInvoice>>> GetAllInvoicesByPatientIdAsync(Guid patientId);
+        Task<Result<IEnumerable<ResponsePatientInvoice>>> GetAllInvoicesByPatientIdAsync(Guid patientId);
 
 
-        //Task<Result<IEnumerable<ResponsePatientStay>>> GetAllStaysByPatientIdAsync(Guid patientId);
+        Task<Result<IEnumerable<ResponsePatientStay>>> GetAllStaysByPatientIdAsync(Guid patientId);
 
 
         //Task<Result<IEnumerable<ResponsePatientOperation>>> GetAllOperationsByPatientIdAsync(Guid patientId);

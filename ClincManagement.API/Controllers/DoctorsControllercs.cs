@@ -21,8 +21,10 @@ namespace ClincManagement.API.Controllers
             _doctorService = doctorService;
         }
 
-     
-        [HttpGet]
+
+
+        [HttpGet("GetAll")]
+
         [ProducesResponseType(typeof(IEnumerable<DoctorListResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
@@ -40,7 +42,8 @@ namespace ClincManagement.API.Controllers
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
-        [HttpPost]
+
+        [HttpPost("Add")]
         [ProducesResponseType(typeof(DoctorDetailsResponse), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateDoctor(
             [FromForm] CreateDoctorRequest request,

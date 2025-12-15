@@ -2,14 +2,17 @@
 {
     public class AppointmentDetailsResponse
     {
-        public string Status { get; set; } = string.Empty;
         public string AppointmentId { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+
         public string ReferenceCode { get; set; } = string.Empty;
         public string InvoiceId { get; set; } = string.Empty;
         public string PaymentStatus { get; set; } = string.Empty;
-        public DoctorDetails DoctorDetails { get; set; } = new();
-        public BookingTime BookingTime { get; set; } = new();
-        public FinancialSummary FinancialSummary { get; set; } = new();
+
+        public DoctorDetails DoctorDetails { get; set; } = new DoctorDetails();
+        public BookingTime BookingTime { get; set; } = new BookingTime();
+        public FinancialSummary FinancialSummary { get; set; } = new FinancialSummary();
+
         public string Notes { get; set; } = string.Empty;
     }
 
@@ -22,7 +25,7 @@
     public class BookingTime
     {
         public string Date { get; set; } = string.Empty;
-        public string Time { get; set; } = string.Empty;
+        public string Time { get; set; } = string.Empty;    // "HH:mm"
     }
 
     public class FinancialSummary

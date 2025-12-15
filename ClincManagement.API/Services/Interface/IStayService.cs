@@ -1,8 +1,6 @@
 ﻿using ClincManagement.API.Abstractions;
 using ClincManagement.API.Contracts.Stay.Requests;
-using ClincManagement.API.Contracts.Stay.Respones.ClincManagement.API.Contracts.Stay.Responses;
-using ClincManagement.API.Contracts.Stay.Respones;
-
+using ClincManagement.API.Contracts.Stay.Responses; 
 using System;
 using System.Threading;
 using System.Threading.Tasks;

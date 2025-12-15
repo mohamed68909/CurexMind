@@ -49,18 +49,18 @@ namespace ClinicManagement.API.EntitiesConfigurations
                 .HasDefaultValue(0);
 
             builder.HasOne(i => i.Patient)
-                .WithMany(p => p.Invoice)
+                .WithMany(p => p.Invoices)
                 .HasForeignKey(i => i.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
 
 
 
 
-
-            //builder.HasOne(i => i.ServiceType)
-               // .WithMany(s => s.Invoices)
-               // .HasForeignKey(i => i.ServiceTypeId)
-               // .OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne(i => i.ServiceType)
+                .WithMany(s => s.Invoices)
+                .HasForeignKey(i => i.ServiceTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(i => i.Payment)
                 .WithOne(p => p.Invoice)
@@ -101,7 +101,9 @@ namespace ClinicManagement.API.EntitiesConfigurations
                     IsDeleted = false,
                     CreatedDate = new DateTime(2025, 09, 15),
                     CreatedById = "System",
-                    CreatedOn = new DateTime(2025, 09, 15)
+                    CreatedOn = new DateTime(2025, 09, 15),
+                 
+
                 }
             );
         }

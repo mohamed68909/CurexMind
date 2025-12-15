@@ -73,17 +73,15 @@ namespace ClincManagement.API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "MedicalServices",
+                name: "ServiceTypes",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Cost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MedicalServices", x => x.Id);
+                    table.PrimaryKey("PK_ServiceTypes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -202,11 +200,8 @@ namespace ClincManagement.API.Migrations
                     Address = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     SocialStatus = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    PatientId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     CreatedById = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UpdatedById = table.Column<string>(type: "nvarchar(450)", nullable: true),
@@ -228,11 +223,6 @@ namespace ClincManagement.API.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Patients_Patients_PatientId1",
-                        column: x => x.PatientId1,
-                        principalTable: "Patients",
-                        principalColumn: "PatientId");
                 });
 
             migrationBuilder.CreateTable(
@@ -256,33 +246,6 @@ namespace ClincManagement.API.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ServiceTypes",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    DefaultPriceEGP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedById = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UpdatedById = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    DeletedById = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedOn = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedOn = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ServiceTypes", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ServiceTypes_AspNetUsers_UpdatedById",
-                        column: x => x.UpdatedById,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -311,12 +274,12 @@ namespace ClincManagement.API.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Specialization = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     YearsOfExperience = table.Column<int>(type: "int", nullable: false),
                     Languages = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ClinicId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     CreatedById = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UpdatedById = table.Column<string>(type: "nvarchar(450)", nullable: true),
@@ -351,42 +314,23 @@ namespace ClincManagement.API.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ServiceTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Department = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     RoomNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     BedNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    StayType = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CheckInDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CheckOutDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    TotalCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedById = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UpdatedById = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    DeletedById = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedOn = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedOn = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Stays", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Stays_AspNetUsers_UpdatedById",
-                        column: x => x.UpdatedById,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                    table.ForeignKey(
                         name: "FK_Stays_Patients_PatientId",
                         column: x => x.PatientId,
                         principalTable: "Patients",
                         principalColumn: "PatientId");
-                    table.ForeignKey(
-                        name: "FK_Stays_ServiceTypes_ServiceTypeId",
-                        column: x => x.ServiceTypeId,
-                        principalTable: "ServiceTypes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -398,18 +342,17 @@ namespace ClincManagement.API.Migrations
                     DoctorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ClinicId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AppointmentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    AppointmentTime = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    AppointmentTime = table.Column<TimeSpan>(type: "time", nullable: false),
                     Duration = table.Column<int>(type: "int", nullable: false, defaultValue: 30),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Type = table.Column<int>(type: "int", maxLength: 50, nullable: false),
                     Status = table.Column<int>(type: "int", maxLength: 20, nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     CreatedById = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UpdatedById = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     DeletedById = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedOn = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DeletedOn = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -445,12 +388,12 @@ namespace ClincManagement.API.Migrations
                     PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DoctorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ClinicId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ServiceTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PaymentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     TotalAmountEGP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DiscountEGP = table.Column<decimal>(type: "decimal(18,2)", nullable: false, defaultValue: 0m),
                     FinalAmountEGP = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     PaidAmountEGP = table.Column<decimal>(type: "decimal(18,2)", nullable: false, defaultValue: 0m),
+                    ServiceTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     InvoiceNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     InvoiceDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
@@ -564,63 +507,6 @@ namespace ClincManagement.API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "MedicalServiceStay",
-                columns: table => new
-                {
-                    MedicalServicesId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StaysId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_MedicalServiceStay", x => new { x.MedicalServicesId, x.StaysId });
-                    table.ForeignKey(
-                        name: "FK_MedicalServiceStay_MedicalServices_MedicalServicesId",
-                        column: x => x.MedicalServicesId,
-                        principalTable: "MedicalServices",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_MedicalServiceStay_Stays_StaysId",
-                        column: x => x.StaysId,
-                        principalTable: "Stays",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "StayActivities",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StayId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ByUser = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedById = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UpdatedById = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    DeletedById = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedOn = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedOn = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StayActivities", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_StayActivities_AspNetUsers_UpdatedById",
-                        column: x => x.UpdatedById,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_StayActivities_Stays_StayId",
-                        column: x => x.StayId,
-                        principalTable: "Stays",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Payments",
                 columns: table => new
                 {
@@ -679,8 +565,8 @@ namespace ClincManagement.API.Migrations
 
             migrationBuilder.InsertData(
                 table: "ServiceTypes",
-                columns: new[] { "Id", "CreatedById", "CreatedOn", "DefaultPriceEGP", "DeletedById", "DeletedOn", "Description", "IsActive", "IsDeleted", "Name", "UpdatedById", "UpdatedOn" },
-                values: new object[] { new Guid("44444444-4444-4444-4444-444444444444"), "System", new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 500.00m, null, null, "General medical consultation service.", true, false, "Consultation", null, null });
+                columns: new[] { "Id", "Name" },
+                values: new object[] { new Guid("44444444-4444-4444-4444-444444444444"), "Consultation" });
 
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
@@ -694,8 +580,8 @@ namespace ClincManagement.API.Migrations
 
             migrationBuilder.InsertData(
                 table: "Patients",
-                columns: new[] { "PatientId", "Address", "CreatedById", "CreatedDate", "CreatedOn", "DateOfBirth", "DeletedById", "DeletedOn", "Gender", "IsDeleted", "NationalId", "Notes", "PatientId1", "SocialStatus", "UpdatedById", "UpdatedDate", "UpdatedOn", "UserId" },
-                values: new object[] { new Guid("11111111-1111-1111-1111-111111111111"), "", "system", new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(1998, 5, 20, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, 1, false, "29812345678901", "First patient note", null, 1, null, new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "4E14506C-D3C0-4AE3-8616-5EB95A764358" });
+                columns: new[] { "PatientId", "Address", "CreatedById", "CreatedOn", "DateOfBirth", "DeletedById", "DeletedOn", "Gender", "IsDeleted", "NationalId", "Notes", "SocialStatus", "UpdatedById", "UpdatedOn", "UserId" },
+                values: new object[] { new Guid("11111111-1111-1111-1111-111111111111"), "d", "system", new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(1998, 5, 20, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, 1, false, "29812345678901", "First patient note", 1, null, new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "4E14506C-D3C0-4AE3-8616-5EB95A764358" });
 
             migrationBuilder.InsertData(
                 table: "UserProfileImages",
@@ -719,8 +605,8 @@ namespace ClincManagement.API.Migrations
 
             migrationBuilder.InsertData(
                 table: "Stays",
-                columns: new[] { "Id", "BedNumber", "CheckInDate", "CheckOutDate", "CreatedById", "CreatedOn", "DeletedById", "DeletedOn", "Department", "IsDeleted", "Notes", "PatientId", "RoomNumber", "ServiceTypeId", "Status", "TotalCost", "UpdatedById", "UpdatedOn" },
-                values: new object[] { new Guid("77777777-7777-7777-7777-777777777777"), "B1", new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(1900, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "System", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, "General Medicine", false, "Patient admitted for observation.", new Guid("11111111-1111-1111-1111-111111111111"), "101A", new Guid("44444444-4444-4444-4444-444444444444"), "Admitted", 1500m, null, null });
+                columns: new[] { "Id", "BedNumber", "Department", "EndDate", "Notes", "PatientId", "RoomNumber", "StartDate", "Status", "StayType" },
+                values: new object[] { new Guid("77777777-7777-7777-7777-777777777777"), "B1", "General Medicine", null, "Patient admitted for observation.", new Guid("11111111-1111-1111-1111-111111111111"), "101A", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active", 0 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AppointmentDate",
@@ -854,11 +740,6 @@ namespace ClincManagement.API.Migrations
                 column: "UpdatedById");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MedicalServiceStay_StaysId",
-                table: "MedicalServiceStay",
-                column: "StaysId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_OperationDate",
                 table: "Operations",
                 column: "Date");
@@ -878,11 +759,6 @@ namespace ClincManagement.API.Migrations
                 table: "Patients",
                 column: "NationalId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Patients_PatientId1",
-                table: "Patients",
-                column: "PatientId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Patients_UpdatedById",
@@ -940,26 +816,6 @@ namespace ClincManagement.API.Migrations
                 column: "PatientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ServiceTypes_UpdatedById",
-                table: "ServiceTypes",
-                column: "UpdatedById");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StayActivities_StayId",
-                table: "StayActivities",
-                column: "StayId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StayActivities_UpdatedById",
-                table: "StayActivities",
-                column: "UpdatedById");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StayCheckInDate",
-                table: "Stays",
-                column: "CheckInDate");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_StayRoomNumber",
                 table: "Stays",
                 column: "RoomNumber");
@@ -968,16 +824,6 @@ namespace ClincManagement.API.Migrations
                 name: "IX_Stays_PatientId",
                 table: "Stays",
                 column: "PatientId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Stays_ServiceTypeId",
-                table: "Stays",
-                column: "ServiceTypeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Stays_UpdatedById",
-                table: "Stays",
-                column: "UpdatedById");
         }
 
         /// <inheritdoc />
@@ -999,9 +845,6 @@ namespace ClincManagement.API.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "MedicalServiceStay");
-
-            migrationBuilder.DropTable(
                 name: "Operations");
 
             migrationBuilder.DropTable(
@@ -1014,7 +857,7 @@ namespace ClincManagement.API.Migrations
                 name: "Reviews");
 
             migrationBuilder.DropTable(
-                name: "StayActivities");
+                name: "Stays");
 
             migrationBuilder.DropTable(
                 name: "UserProfileImages");
@@ -1023,16 +866,10 @@ namespace ClincManagement.API.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "MedicalServices");
-
-            migrationBuilder.DropTable(
                 name: "Appointments");
 
             migrationBuilder.DropTable(
                 name: "Invoices");
-
-            migrationBuilder.DropTable(
-                name: "Stays");
 
             migrationBuilder.DropTable(
                 name: "Doctors");

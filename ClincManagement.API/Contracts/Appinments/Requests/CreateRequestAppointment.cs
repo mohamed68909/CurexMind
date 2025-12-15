@@ -9,7 +9,8 @@
         public AppointmentType AppointmentType { get; set; }
         public AppointmentStatus? Status { get; set; }
         public DateTime Date { get; set; }
-        public string Time { get; set; } = string.Empty;
+        public TimeSpan Time { get; set; }
+
         public int DurationMinutes { get; set; }
         public string? Notes { get; set; }
     }

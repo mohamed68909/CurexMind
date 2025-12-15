@@ -11,41 +11,39 @@ namespace ClincManagement.API.Controllers
     [ApiController]
     public class PaymentsController : ControllerBase
     {
-        readonly IPaymentService _paymentService;
+        private readonly IPaymentService _paymentService;
+
         public PaymentsController(IPaymentService paymentService)
         {
             _paymentService = paymentService;
         }
-        [HttpPost("visa")]
 
-        [ProducesResponseType(typeof(PaymentResponse), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PayWithVisa(
-       [FromRoute] Guid appointmentId,
-       [FromBody] VisaPaymentRequest request,
-       CancellationToken cancellationToken)
+        // ----------------------------------------
+        // Get All Payments
+        // ----------------------------------------
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllPayments(CancellationToken cancellationToken)
         {
-            var result = await _paymentService.PayWithVisaAsync(
-                User.GetUserId(),
-                appointmentId,
-                request,
-                cancellationToken);
-
+            var result = await _paymentService.GetAllAsync(cancellationToken);
             return result.IsSuccess
-                ? CreatedAtAction(nameof(GetPayment), new { id = result.Value.Id }, result.Value)
-                : result.ToProblem();
+                ? Ok(result.Value)
+                : StatusCode(StatusCodes.Status500InternalServerError, result.Error);
         }
 
-        [HttpPost("instapay")]
-
+        // ----------------------------------------
+        // Create Payment (Manual / Cash / Card)
+        // ----------------------------------------
+        [HttpPost("{appointmentId}")]
         [ProducesResponseType(typeof(PaymentResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PayWithInstapay(
+        public async Task<IActionResult> CreatePayment(
             [FromRoute] Guid appointmentId,
-            [FromBody] InstapayPaymentRequest request,
+            [FromBody] CreatePaymentRequest request,
             CancellationToken cancellationToken)
         {
-            var result = await _paymentService.PayWithInstapayAsync(
+            var result = await _paymentService.CreateAsync(
                 User.GetUserId(),
                 appointmentId,
                 request,
@@ -56,7 +54,10 @@ namespace ClincManagement.API.Controllers
                 : result.ToProblem();
         }
 
-        [HttpGet("~/payments/{id}")]
+        // ----------------------------------------
+        // Get Payment By Id
+        // ----------------------------------------
+        [HttpGet("{id}")]
         [Authorize(Roles = DefaultRoles.Admin.Name)]
         [ProducesResponseType(typeof(PaymentResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -66,16 +67,18 @@ namespace ClincManagement.API.Controllers
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
-        [HttpDelete("~/payments/{id}/cancel")]
+        // ----------------------------------------
+        // Cancel Payment
+        // ----------------------------------------
+        [HttpDelete("{id}/cancel")]
         [Authorize(Roles = DefaultRoles.Admin.Name)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Cancel([FromRoute] Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> CancelPayment([FromRoute] Guid id, CancellationToken cancellationToken)
         {
             var result = await _paymentService.CancelPaymentAsync(id, User.GetUserId(), cancellationToken);
             return result.IsSuccess ? NoContent() : result.ToProblem();
         }
     }
 }
-

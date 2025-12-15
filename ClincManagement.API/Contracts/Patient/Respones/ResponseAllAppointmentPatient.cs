@@ -6,7 +6,7 @@
         public string DoctorName { get; init; } = string.Empty;
         public string Specialization { get; init; } = string.Empty;
         public DateTime Date { get; init; }
-        public string Time { get; init; } = string.Empty;
+        public TimeSpan Time { get; init; }
         public string VisitType { get; init; } = string.Empty;
         public string Status { get; init; } = string.Empty;
         public string PaymentStatus { get; init; } = string.Empty;

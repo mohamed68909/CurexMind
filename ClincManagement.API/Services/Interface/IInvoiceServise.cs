@@ -1,23 +1,41 @@
 ﻿using ClincManagement.API.Abstractions;
 using ClincManagement.API.Contracts.Invoice.Requests;
 
-using ClincManagement.API.Contracts.Invoice.Respones;
+using ClincManagement.API.Contracts.Invoice.Responses;
 
-
-namespace ClinicManagement.API.Services.Interface
+namespace ClincManagement.API.Services.Interfaces
 {
     public interface IInvoiceService
     {
-        Task<Result<InvoiceDetailsDto>> CreateInvoiceAsync(CreateInvoiceDto invoiceData, CancellationToken cancellation);
+        Task<Result<InvoiceDetailsDto>> CreateInvoiceAsync(
+            CreateInvoiceDto invoiceData,
+            CancellationToken cancellationToken = default
+        );
 
-        Task<Result<InvoiceDetailsDto>> GetInvoiceDetailsAsync(Guid invoiceId);
+        Task<Result<InvoiceDetailsDto>> GetInvoiceDetailsAsync(
+            Guid invoiceId,
+            CancellationToken cancellationToken = default
+        );
 
-        Task<Result<InvoiceDetailsDto>> UpdateInvoiceAsync(Guid invoiceId, UpdateInvoiceDto updateData, CancellationToken cancellation);
+        Task<Result<InvoiceDetailsDto>> UpdateInvoiceAsync(
+            Guid invoiceId,
+            UpdateInvoiceDto updateData,
+            CancellationToken cancellationToken = default
+        );
 
-        Task<Result> DeleteInvoiceAsync(Guid invoiceId);
+        Task<Result> DeleteInvoiceAsync(
+            Guid invoiceId,
+            CancellationToken cancellationToken = default
+        );
 
-        Task<Result<IEnumerable<InvoiceSummaryDto>>> GetAllInvoicesAsync(InvoiceFilterDto filterParams = null);
+        Task<Result<IEnumerable<InvoiceSummaryDto>>> GetAllInvoicesAsync(
+         
+            CancellationToken cancellationToken = default
+        );
 
-        Task<Result<byte[]>> GeneratePdfExportAsync(Guid invoiceId);
+        Task<Result<byte[]>> GeneratePdfExportAsync(
+            Guid invoiceId,
+            CancellationToken cancellationToken = default
+        );
     }
 }

@@ -7,7 +7,7 @@
         public int YearsOfExperience { get; set; }
         public string Languages { get; set; } = string.Empty;
 
-    
+    public decimal Price { get; set; }
         public string Email { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
@@ -25,7 +25,7 @@
         public string Specialization { get; set; } = string.Empty;
         public int YearsOfExperience { get; set; }
         public string Languages { get; set; } = string.Empty;
-
+        public decimal Price { get; set; }
         
         public string Email { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;

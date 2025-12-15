@@ -30,11 +30,12 @@
                     Gender = Gender.Male,
                     Notes = "First patient note",
                     DateOfBirth = new DateTime(1998, 5, 20),
-                    CreatedDate = new DateTime(2025, 09, 15),
-                    UpdatedDate = new DateTime(2025, 09, 15),
+                    CreatedOn = new DateTime(2025, 09, 15),
+                    UpdatedOn = new DateTime(2025, 09, 15),
                     SocialStatus = SocialStatus.Single,
                     UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
-                    CreatedById = "system"
+                    CreatedById = "system",
+                    Address="d"
                 }
             );
         }

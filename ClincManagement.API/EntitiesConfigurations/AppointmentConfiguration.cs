@@ -9,7 +9,7 @@
             builder.Property(a => a.Type).IsRequired().HasMaxLength(50);
             builder.Property(a => a.AppointmentTime).IsRequired();
             builder.Property(a => a.Notes).HasMaxLength(500).IsRequired(false);
-            builder.Property(a => a.UpdatedDate).IsRequired();
+            builder.Property(a => a.UpdatedOn).IsRequired();
             builder.Property(a => a.Duration).IsRequired().HasDefaultValue(30);
 
             builder.HasOne(a => a.Patient)

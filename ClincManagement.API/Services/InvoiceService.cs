@@ -1,97 +1,107 @@
 ﻿using ClincManagement.API.Abstractions;
 using ClincManagement.API.Contracts.Invoice.Requests;
-
-using ClincManagement.API.Contracts.Invoice.Respones;
-
+using ClincManagement.API.Contracts.Invoice.Responses;
+using ClincManagement.API.Services.Interfaces;
 using ClinicManagement.API.Errors;
-using ClinicManagement.API.Services.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClinicManagement.API.Services
 {
     public class InvoiceService : IInvoiceService
     {
         private readonly ApplicationDbContext _context;
+
         public InvoiceService(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        public async Task<Result<InvoiceDetailsDto>> CreateInvoiceAsync(CreateInvoiceDto request, CancellationToken cancel)
+        // CREATE INVOICE
+        public async Task<Result<InvoiceDetailsDto>> CreateInvoiceAsync(CreateInvoiceDto request, CancellationToken cancel = default)
         {
-            var patient = await _context.Patients.FindAsync(request.PatientId);
-            var doctor = await _context.Doctors.Include(d => d.Clinic).FirstOrDefaultAsync(d => d.Id == request.DoctorId, cancel);
-           // var serviceType = await _context.ServiceTypes.FindAsync(request.ServiceDetails.ServiceTypeId);
+            var patient = await _context.Patients
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.PatientId == request.PatientId, cancel);
 
-            if (patient == null) return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.InvalidPatient);
-            if (doctor == null) return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.InvalidDoctor);
-          //  if (serviceType == null) return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.ServiceMismatch);
+            if (patient == null)
+                return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.InvalidPatient);
+
+            var doctor = await _context.Doctors
+                .Include(d => d.User)
+                .Include(d => d.Clinic)
+                .FirstOrDefaultAsync(d => d.Id == request.DoctorId, cancel);
+
+            if (doctor == null)
+                return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.InvalidDoctor);
+
+            if (!Enum.TryParse<InvoiceStatus>(request.PaymentInformation.PaymentStatus, out var status))
+                return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.GeneralFailure);
+
+            if (request.AmountDetails.TotalAmountEGP < 0 || request.AmountDetails.FinalAmountEGP < 0)
+                return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.InvalidAmount);
 
             var invoice = new Invoice
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 InvoiceDate = DateTime.UtcNow,
-                PatientId = request.PatientId,
+                PatientId = patient.PatientId,
                 DoctorId = doctor.Id,
                 ClinicId = doctor.ClinicId,
-
                 ServiceTypeId = request.ServiceDetails.ServiceTypeId,
                 VisitDate = request.ServiceDetails.VisitDate,
-                //DateTimeVisitTime = request.ServiceDetails.VisitDate,
                 TotalAmountEGP = request.AmountDetails.TotalAmountEGP,
                 DiscountEGP = request.AmountDetails.DiscountEGP,
                 FinalAmountEGP = request.AmountDetails.FinalAmountEGP,
-
                 PaymentMethod = request.PaymentInformation.PaymentMethod,
-                Status = Enum.Parse<InvoiceStatus>(request.PaymentInformation.PaymentStatus),
+                Status = status,
                 PaidAmountEGP = request.PaymentInformation.AmountPaidEGP,
-
                 Notes = request.Notes,
-                IsDeleted = false
+                IsDeleted = false,
+                CreatedById= "System"
+
             };
 
-            _context.Invoices.Add(invoice);
+            await _context.Invoices.AddAsync(invoice, cancel);
             await _context.SaveChangesAsync(cancel);
 
-           // invoice.ServiceType = serviceType;
-            invoice.Patient = patient;
-            invoice.Doctor = doctor;
-
-            var responseDto = new InvoiceDetailsDto
-            {
-                InvoiceId = invoice.Id,
-                InvoiceDate = invoice.InvoiceDate,
-                PaymentStatus = invoice.Status.ToString(),
-                ClinicName = doctor.Clinic.Name,
-
-                Patient = new PatientResponseDto { Id = patient.PatientId, Name = patient.User.FullName },
-                Doctor = new DoctorResponseDto { Id = doctor.Id, Name = doctor.User.FullName },
-                //Service = new ServiceResponseDto { Type = invoice.ServiceType.Name, VisitDate = invoice.VisitDate, VisitTime = invoice.VisitTime.ToString() },
-                AmountBreakdown = new AmountBreakdownDto
-                {
-                    ServiceCharge = invoice.TotalAmountEGP,
-                    Discount = invoice.DiscountEGP,
-                    Total = invoice.FinalAmountEGP,
-                    PaidAmount = invoice.PaidAmountEGP,
-                    Remaining = invoice.FinalAmountEGP - invoice.PaidAmountEGP
-                },
-                Notes = invoice.Notes
-            };
-
-            return Result.Success(responseDto);
+            return Result.Success(ConvertToDetailsDto(invoice, patient, doctor));
         }
 
-        public async Task<Result<InvoiceDetailsDto>> UpdateInvoiceAsync(Guid invoiceId, UpdateInvoiceDto request, CancellationToken cancel)
+        // UPDATE INVOICE
+        public async Task<Result<InvoiceDetailsDto>> UpdateInvoiceAsync(Guid invoiceId, UpdateInvoiceDto request, CancellationToken cancel = default)
         {
-            var invoiceGuid = invoiceId;
-            var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.Id == invoiceGuid && !i.IsDeleted, cancel);
+            var invoice = await _context.Invoices
+                .Include(i => i.Patient).ThenInclude(p => p.User)
+                .Include(i => i.Doctor).ThenInclude(d => d.Clinic)
+                .FirstOrDefaultAsync(i => i.Id == invoiceId && !i.IsDeleted, cancel);
 
-            if (invoice == null) return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.NotFound);
+            if (invoice == null)
+                return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.NotFound);
 
-            if (request.PatientId != null) invoice.PatientId = request.PatientId;
-            if (request.DoctorId != null) invoice.DoctorId = request.DoctorId;
+            if (invoice.Status == InvoiceStatus.Paid)
+                return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.AlreadyPaid);
+
+            if (request.PatientId != null)
+            {
+                var patient = await _context.Patients.FirstOrDefaultAsync(p => p.PatientId == request.PatientId, cancel);
+                if (patient == null)
+                    return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.InvalidPatient);
+                invoice.PatientId = request.PatientId;
+            }
+
+            if (request.DoctorId != null)
+            {
+                var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Id == request.DoctorId, cancel);
+                if (doctor == null)
+                    return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.InvalidDoctor);
+                invoice.DoctorId = request.DoctorId;
+            }
 
             if (request.AmountDetails != null)
             {
+                if (request.AmountDetails.TotalAmountEGP < 0 || request.AmountDetails.FinalAmountEGP < 0)
+                    return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.InvalidAmount);
+
                 invoice.TotalAmountEGP = request.AmountDetails.TotalAmountEGP;
                 invoice.DiscountEGP = request.AmountDetails.DiscountEGP;
                 invoice.FinalAmountEGP = request.AmountDetails.FinalAmountEGP;
@@ -99,138 +109,101 @@ namespace ClinicManagement.API.Services
 
             if (request.PaymentInformation != null)
             {
-                invoice.PaymentMethod = request.PaymentInformation.PaymentMethod;
-                invoice.Status = Enum.Parse<InvoiceStatus>(request.PaymentInformation.PaymentStatus);
+                if (!Enum.TryParse<InvoiceStatus>(request.PaymentInformation.PaymentStatus, out var newStatus))
+                    return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.GeneralFailure);
 
+                invoice.PaymentMethod = request.PaymentInformation.PaymentMethod;
+                invoice.Status = newStatus;
                 invoice.PaidAmountEGP = request.PaymentInformation.AmountPaidEGP;
             }
 
+            invoice.UpdatedOn = DateTime.UtcNow;
+            invoice.CreatedById ="St";
 
+            _context.Invoices.Update(invoice);
+            await _context.SaveChangesAsync(cancel);
+
+            return Result.Success(ConvertToDetailsDto(invoice, invoice.Patient, invoice.Doctor));
+        }
+
+        // DELETE INVOICE
+        public async Task<Result> DeleteInvoiceAsync(Guid invoiceId, CancellationToken cancel = default)
+        {
+            var invoice = await _context.Invoices
+                .FirstOrDefaultAsync(i => i.Id == invoiceId && !i.IsDeleted, cancel);
+
+            if (invoice == null)
+                return Result.Failure(InvoiceErrors.NotFound);
+
+            invoice.IsDeleted = true;
             invoice.UpdatedOn = DateTime.UtcNow;
 
             _context.Invoices.Update(invoice);
             await _context.SaveChangesAsync(cancel);
 
-
-            var updatedInvoice = await _context.Invoices
-                .Where(i => i.Id == invoiceGuid && !i.IsDeleted)
-                .Include(i => i.Patient).ThenInclude(p => p.User)
-                .Include(i => i.Doctor).ThenInclude(d => d.Clinic)
-               // .Include(i => i.ServiceType)
-                .FirstOrDefaultAsync(cancel);
-
-            var updatedDto = new InvoiceDetailsDto
-            {
-                InvoiceId = updatedInvoice.Id,
-                InvoiceDate = updatedInvoice.InvoiceDate,
-                PaymentStatus = updatedInvoice.Status.ToString(),
-                ClinicName = updatedInvoice.Doctor.Clinic.Name,
-                Patient = new PatientResponseDto { Id = updatedInvoice.Patient.PatientId, Name = updatedInvoice.Patient.User.FullName },
-                Doctor = new DoctorResponseDto { Id = updatedInvoice.Doctor.Id, Name = updatedInvoice.Doctor.User.FullName },
-                //Service = new ServiceResponseDto { Type = updatedInvoice.ServiceType.Name, VisitDate = updatedInvoice.VisitDate, VisitTime = updatedInvoice.VisitTime.ToString() },
-                AmountBreakdown = new AmountBreakdownDto
-                {
-                    ServiceCharge = updatedInvoice.TotalAmountEGP,
-                    Discount = updatedInvoice.DiscountEGP,
-                    Total = updatedInvoice.FinalAmountEGP,
-                    PaidAmount = updatedInvoice.PaidAmountEGP,
-                    Remaining = updatedInvoice.FinalAmountEGP - updatedInvoice.PaidAmountEGP
-                },
-                Notes = updatedInvoice.Notes
-            };
-
-            return Result.Success(updatedDto);
-        }
-
-        public async Task<Result> DeleteInvoiceAsync(Guid invoiceId)
-        {
-            var invoiceGuid =invoiceId;
-            var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.Id == invoiceGuid && !i.IsDeleted);
-
-            if (invoice == null) return Result.Failure(InvoiceErrors.NotFound);
-
-            invoice.IsDeleted = true;
-
-            invoice.UpdatedOn = DateTime.UtcNow;
-
-            _context.Invoices.Update(invoice);
-            await _context.SaveChangesAsync();
-
             return Result.Success();
         }
 
-
-        public async Task<Result<IEnumerable<InvoiceSummaryDto>>> GetAllInvoicesAsync(InvoiceFilterDto filterParams = null)
+        public async Task<Result<IEnumerable<InvoiceSummaryDto>>> GetAllInvoicesAsync(CancellationToken cancel = default)
         {
-            filterParams ??= new InvoiceFilterDto();
-
-            var query = _context.Invoices
+            var invoices = await _context.Invoices
                 .Where(i => !i.IsDeleted)
                 .Include(i => i.Patient).ThenInclude(p => p.User)
-                .Include(i => i.Doctor)
-                .AsQueryable();
+                .Include(i => i.Doctor).ThenInclude(d => d.User)
+                .Include(i => i.ServiceType)
+                .ToListAsync(cancel);
 
-            if (filterParams != null)
+            if (!invoices.Any())
+                return Result.Failure<IEnumerable<InvoiceSummaryDto>>(InvoiceErrors.NotFound);
+
+            var list = invoices.Select(i => new InvoiceSummaryDto
             {
-                if (!string.IsNullOrWhiteSpace(filterParams.SearchQuery))
-                {
-                    query = query.Where(i =>
-                        i.Id.ToString().Contains(filterParams.SearchQuery) ||
-                        i.Patient.User.FullName.Contains(filterParams.SearchQuery) ||
-                        i.Doctor.User.FullName.Contains(filterParams.SearchQuery));
-                }
-
-                if (!string.IsNullOrWhiteSpace(filterParams.PaymentStatus))
-                {
-                    var status = Enum.Parse<InvoiceStatus>(filterParams.PaymentStatus);
-                    query = query.Where(i => i.Status == status);
-                }
-            }
-
-            query = ApplySorting(query, filterParams);
-
-            var totalCount = await query.CountAsync();
-            if (totalCount == 0) return Result.Failure<IEnumerable<InvoiceSummaryDto>>(InvoiceErrors.NotFound);
-
-            var pagedQuery = query.Skip((filterParams.PageNumber - 1) * filterParams.PageSize)
-                                  .Take(filterParams.PageSize);
-
-            var invoices = await pagedQuery.ToListAsync();
-
-            var data = invoices.Select(i => new InvoiceSummaryDto
-            {
-                InvoiceId = i.Id.ToString(),
+                InvoiceId = i.Id,
+                InvoiceNumber = i.InvoiceNumber,
                 InvoiceDate = i.InvoiceDate,
+
                 PatientName = i.Patient.User.FullName,
                 DoctorName = i.Doctor.User.FullName,
-                TotalAmount = i.FinalAmountEGP,
-                PaymentStatus = i.Status.ToString()
-            }).ToList();
 
-            return Result.Success((IEnumerable<InvoiceSummaryDto>)data);
+                ServiceType = i.ServiceType.Name,
+
+                TotalAmount = i.TotalAmountEGP,
+                DiscountApplied = i.DiscountEGP,
+                NetTotal = i.FinalAmountEGP,
+
+                PaymentMethod = i.PaymentMethod,
+                PaymentStatus = i.Status.ToString()
+            });
+
+            return Result.Success(list);
         }
 
-        public async Task<Result<InvoiceDetailsDto>> GetInvoiceDetailsAsync(Guid invoiceId)
+
+
+        // GENERATE PDF (Stub)
+        public async Task<Result<byte[]>> GeneratePdfExportAsync(Guid invoiceId, CancellationToken cancel = default)
         {
-            var invoiceGuid = invoiceId;
             var invoice = await _context.Invoices
-                .Where(i => i.Id == invoiceGuid && !i.IsDeleted)
-                .Include(i => i.Patient).ThenInclude(p => p.User)
-                .Include(i => i.Doctor).ThenInclude(d => d.Clinic)
-                //.Include(i => i.ServiceType)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(i => i.Id == invoiceId && !i.IsDeleted, cancel);
 
-            if (invoice == null) return Result.Failure<InvoiceDetailsDto>(InvoiceErrors.NotFound);
+            if (invoice == null)
+                return Result.Failure<byte[]>(InvoiceErrors.NotFound);
 
-            var responseDto = new InvoiceDetailsDto
+            // TODO: Implement PDF generation
+            return Result.Success(Array.Empty<byte>());
+        }
+
+        // Helper method
+        private InvoiceDetailsDto ConvertToDetailsDto(Invoice invoice, Patient patient, Doctor doctor)
+        {
+            return new InvoiceDetailsDto
             {
                 InvoiceId = invoice.Id,
                 InvoiceDate = invoice.InvoiceDate,
                 PaymentStatus = invoice.Status.ToString(),
-                ClinicName = invoice.Doctor.Clinic.Name,
-                Patient = new PatientResponseDto { Id = invoice.Patient.PatientId, Name = invoice.Patient.User.FullName },
-                Doctor = new DoctorResponseDto { Id = invoice.Doctor.Id, Name = invoice.Doctor.User.FullName },
-               // Service = new ServiceResponseDto { Type = invoice.ServiceType.Name, VisitDate = invoice.VisitDate, VisitTime = invoice.VisitTime.ToString() },
+                ClinicName = doctor.Clinic.Name,
+                Patient = new PatientResponseDto { Id = patient.PatientId, Name = patient.User.FullName },
+                Doctor = new DoctorResponseDto { Id = doctor.Id, Name = doctor.User.FullName },
                 AmountBreakdown = new AmountBreakdownDto
                 {
                     ServiceCharge = invoice.TotalAmountEGP,
@@ -241,32 +214,11 @@ namespace ClinicManagement.API.Services
                 },
                 Notes = invoice.Notes
             };
-
-            return Result.Success(responseDto);
         }
 
-        public async Task<Result<byte[]>> GeneratePdfExportAsync(Guid invoiceId)
+        public Task<Result<InvoiceDetailsDto>> GetInvoiceDetailsAsync(Guid invoiceId, CancellationToken cancellationToken = default)
         {
-            var invoiceGuid = invoiceId;
-            var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.Id == invoiceGuid && !i.IsDeleted);
-
-            if (invoice == null) return Result.Failure<byte[]>(InvoiceErrors.NotFound);
-
-            byte[] pdfBytes = Array.Empty<byte>();
-
-            return Result.Success(pdfBytes);
-        }
-
-        private IQueryable<Invoice> ApplySorting(IQueryable<Invoice> query, InvoiceFilterDto filter)
-        {
-            return filter.SortBy.ToLower() switch
-            {
-                "invoicedate" when filter.SortDirection.ToLower() == "asc" => query.OrderBy(i => i.InvoiceDate),
-                "invoicedate" => query.OrderByDescending(i => i.InvoiceDate),
-                "totalamount" when filter.SortDirection.ToLower() == "asc" => query.OrderBy(i => i.FinalAmountEGP),
-                "totalamount" => query.OrderByDescending(i => i.FinalAmountEGP),
-                _ => query.OrderByDescending(i => i.InvoiceDate)
-            };
+            throw new NotImplementedException();
         }
     }
 }

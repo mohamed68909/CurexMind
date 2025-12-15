@@ -1,9 +1,12 @@
-﻿using ClincManagement.API.Helpers;
+﻿using ClincManagement.API.Abstractions;
+using ClincManagement.API.Helpers;
+
 using ClincManagement.API.Services;
 using ClincManagement.API.Services.Interface;
+using ClincManagement.API.Services.Interfaces;
 using ClincManagement.API.Settings;
 using ClinicManagement.API.Services;
-using ClinicManagement.API.Services.Interface;
+
 using CurexMind.API.Services;
 using CurexMind.API.Services.Interface;
 using Mapster;
@@ -115,10 +118,12 @@ namespace ClincManagement.API.Extentions
             services.AddScoped<IJwtProvider, JwtProvider>();
             services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IUserHelpers, UserHelpers>();
-           // services.AddScoped<IStayService, StayService>();
+            services.AddScoped<IStayService, StayService>();
             services.AddScoped<IInvoiceService, InvoiceService>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IImageFileService, ImageFileService>();
+            services.AddScoped<IDashboardService, DashboardService>();
+        
 
             return services;
         }

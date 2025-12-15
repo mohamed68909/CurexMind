@@ -18,10 +18,12 @@
         public DateTime? EndDate { get; set; }
 
         public string? Notes { get; set; }
-        public  Patient Patient { get; set; }
+
+        
+        public Patient Patient { get; set; } = default!;
+
+       
+        public string RoomBed => $"{RoomNumber}-{BedNumber}";
 
     }
-
-
-
 }

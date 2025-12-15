@@ -1,6 +1,7 @@
 ﻿using ClincManagement.API.Abstractions;
 using ClincManagement.API.Contracts.Appinments.Requests;
 using ClincManagement.API.Contracts.Appinments.Respones;
+
 using ClincManagement.API.Contracts.Appointments.Responses;
 using ClincManagement.API.Errors;
 using ClincManagement.API.Services.Interface;
@@ -29,11 +30,11 @@ namespace ClincManagement.API.Services
 
             if (patient == null) return Result.Failure<AppointmentDto>(AppointmentErrors.InvalidPatient);
             if (doctor == null) return Result.Failure<AppointmentDto>(AppointmentErrors.InvalidDoctor);
-            if (request.Date < DateTime.UtcNow) return Result.Failure<AppointmentDto>(AppointmentErrors.InvalidDate);
+            if (request.Date < DateTime.UtcNow.Date) return Result.Failure<AppointmentDto>(AppointmentErrors.InvalidDate);
 
             var conflict = await _context.Appointments.AnyAsync(a =>
                 a.DoctorId == request.DoctorId &&
-                a.AppointmentDate == request.Date &&
+                a.AppointmentDate == request.Date.Date &&
                 a.AppointmentTime == request.Time &&
                 !a.IsDeleted, cancel);
 
@@ -45,13 +46,13 @@ namespace ClincManagement.API.Services
                 PatientId = patient.PatientId,
                 DoctorId = doctor.Id,
                 ClinicId = doctor.ClinicId,
-                AppointmentDate = request.Date,
+                AppointmentDate = request.Date.Date,
                 AppointmentTime = request.Time,
                 Duration = request.DurationMinutes,
                 Type = request.AppointmentType,
                 Status = request.Status ?? AppointmentStatus.Waiting,
                 Notes = request.Notes,
-                UpdatedDate = DateTime.UtcNow,
+                UpdatedOn = DateTime.UtcNow,
                 IsDeleted = false,
                 CreatedById = request.PatientId.ToString()
             };
@@ -68,7 +69,7 @@ namespace ClincManagement.API.Services
                 AppointmentType = appointment.Type.ToString(),
                 Status = appointment.Status.ToString(),
                 Date = appointment.AppointmentDate,
-                Time = appointment.AppointmentTime,
+                Time = appointment.AppointmentTime.ToString(@"hh\:mm"),
                 DurationMinutes = appointment.Duration,
                 Notes = appointment.Notes,
             };
@@ -86,13 +87,13 @@ namespace ClincManagement.API.Services
             appointment.PatientId = request.PatientId;
             appointment.DoctorId = request.DoctorId;
             appointment.ClinicId = request.ClinicId;
-            appointment.AppointmentDate = request.Date;
+            appointment.AppointmentDate = request.Date.Date;
             appointment.AppointmentTime = request.Time;
             appointment.Duration = request.DurationMinutes;
             appointment.Type = request.AppointmentType;
             appointment.Status = request.Status ?? AppointmentStatus.Waiting;
             appointment.Notes = request.Notes;
-            appointment.UpdatedDate = DateTime.UtcNow;
+            appointment.UpdatedOn = DateTime.UtcNow;
 
             _context.Appointments.Update(appointment);
             await _context.SaveChangesAsync(cancel);
@@ -106,7 +107,7 @@ namespace ClincManagement.API.Services
             if (appointment == null) return Result.Failure(AppointmentErrors.NotFound);
 
             appointment.IsDeleted = true;
-            appointment.UpdatedDate = DateTime.UtcNow;
+            appointment.UpdatedOn = DateTime.UtcNow;
 
             _context.Appointments.Update(appointment);
             await _context.SaveChangesAsync(cancel);
@@ -139,7 +140,7 @@ namespace ClincManagement.API.Services
                 DoctorName: a.Doctor?.FullName ?? "No Doctor",
                 Clinic: a.Doctor?.Clinic?.Name ?? "No Clinic",
                 AppointmentDate: a.AppointmentDate,
-                AppointmentTime: a.AppointmentTime,
+                AppointmentTime: a.AppointmentTime.ToString(@"hh\:mm"),
                 AppointmentType: a.Type,
                 Status: a.Status
             )).ToList();
@@ -179,7 +180,7 @@ namespace ClincManagement.API.Services
                 BookingTime = new BookingTime
                 {
                     Date = appointment.AppointmentDate.ToString("yyyy-MM-dd"),
-                    Time = appointment.AppointmentTime
+                    Time = appointment.AppointmentTime.ToString(@"hh\:mm")
                 },
                 FinancialSummary = new FinancialSummary
                 {
@@ -200,11 +201,11 @@ namespace ClincManagement.API.Services
                 .FirstOrDefaultAsync(d => d.Id == Guid.Parse(request.DoctorId), cancel);
 
             if (doctor == null) return Result.Failure<ResponserAppointmentDto>(AppointmentErrors.InvalidDoctor);
-            if (request.Date < DateTime.UtcNow) return Result.Failure<ResponserAppointmentDto>(AppointmentErrors.InvalidDate);
+            if (request.Date < DateTime.UtcNow.Date) return Result.Failure<ResponserAppointmentDto>(AppointmentErrors.InvalidDate);
 
             var conflict = await _context.Appointments.AnyAsync(a =>
                 a.DoctorId == doctor.Id &&
-                a.AppointmentDate == request.Date &&
+                a.AppointmentDate == request.Date.Date &&
                 a.AppointmentTime == request.Time &&
                 !a.IsDeleted, cancel);
 
@@ -216,13 +217,13 @@ namespace ClincManagement.API.Services
                 PatientId = patientId,
                 DoctorId = doctor.Id,
                 ClinicId = doctor.ClinicId,
-                AppointmentDate = request.Date,
+                AppointmentDate = request.Date.Date,
                 AppointmentTime = request.Time,
                 Duration = 30,
                 Type = request.ConsultationType == "Video_Consultation" ? AppointmentType.First_Visit : AppointmentType.Initial_Exam,
                 Status = AppointmentStatus.Waiting,
                 Notes = request.ReasonForVisit,
-                UpdatedDate = DateTime.UtcNow,
+                UpdatedOn = DateTime.UtcNow,
                 IsDeleted = false
             };
 
@@ -231,8 +232,8 @@ namespace ClincManagement.API.Services
 
             return Result.Success(new ResponserAppointmentDto
             {
-                AppointmentId = appointment.Id.GetHashCode(),
-                Massage = "Appointment Created Successfully"
+                AppointmentId = appointment.Id,
+           
             });
         }
     }

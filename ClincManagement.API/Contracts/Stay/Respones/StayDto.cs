@@ -1,9 +1,8 @@
-﻿namespace ClincManagement.API.Contracts.Stay.Respones
+﻿namespace ClincManagement.API.Contracts.Stay.Responses
 {
     public class StayDetailsResponse
     {
         public Guid StayId { get; set; }
-
         public PatientInfoDto Patient { get; set; } = default!;
         public StayInfoDto Stay { get; set; } = default!;
     }
@@ -28,5 +27,4 @@
         public string Status { get; set; } = string.Empty;
         public string? Notes { get; set; }
     }
-
 }

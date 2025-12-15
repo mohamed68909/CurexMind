@@ -2,11 +2,11 @@
 using ClincManagement.API.Contracts.Appinments.Respones;
 using ClincManagement.API.Contracts.Authentications.Requests;
 using ClincManagement.API.Contracts.Clinic.Respones;
-using ClincManagement.API.Contracts.Invoice.Respones;
+
 using ClincManagement.API.Contracts.Operation.Response;
 using ClincManagement.API.Contracts.Patient.Requests;
 using ClincManagement.API.Contracts.Stay.Requests;
-using ClincManagement.API.Contracts.Stay.Respones;
+
 
 using Mapster;
 
@@ -23,22 +23,22 @@ namespace ClincManagement.API.Mapping
                 .Map(dest => dest.UserName, src => src.UserName)
                 .Map(dest => dest.EmailConfirmed, _ => true);
 
-            config.NewConfig<Appointment, AppointmentDto>()
-                .Map(dest => dest.PatientName, src => src.Patient.User.FullName)
-                .Map(dest => dest.DoctorName, src => src.Doctor.User.FullName)
-                .Map(dest => dest.ClinicName, src => src.Clinic.Name);
+            //config.NewConfig<Appointment, AppointmentDto>()
+            //    .Map(dest => dest.PatientName, src => src.Patient.User.FullName)
+            //    .Map(dest => dest.DoctorName, src => src.Doctor.User.FullName)
+            //    .Map(dest => dest.ClinicName, src => src.Clinic.Name);
 
-            config.NewConfig<CreateAppointmentDto, Appointment>();
-            config.NewConfig<UpdateAppointmentDto, Appointment>();
-            config.NewConfig<Appointment, ResponseDetailsAllAppointment>();
+            //config.NewConfig<CreateAppointmentDto, Appointment>();
+            //config.NewConfig<UpdateAppointmentDto, Appointment>();
+            //config.NewConfig<Appointment, ResponseDetailsAllAppointment>();
 
-            config.NewConfig<InitialBooking, Appointment>()
-                .Ignore(dest => dest.Id)
-                .Map(dest => dest.ClinicId, src => src.ClinicId)
-                .Map(dest => dest.DoctorId, src => src.DoctorId)
-                .Map(dest => dest.Type, src => src.AppointmentType)
-                .Map(dest => dest.AppointmentDate, src => src.AppointmentDate ?? DateTime.UtcNow)
-                .Map(dest => dest.Notes, src => src.Notes);
+            //config.NewConfig<InitialBooking, Appointment>()
+            //    .Ignore(dest => dest.Id)
+            //    .Map(dest => dest.ClinicId, src => src.ClinicId)
+            //    .Map(dest => dest.DoctorId, src => src.DoctorId)
+            //    .Map(dest => dest.Type, src => src.AppointmentType)
+            //    .Map(dest => dest.AppointmentDate, src => src.AppointmentDate ?? DateTime.UtcNow)
+            //    .Map(dest => dest.Notes, src => src.Notes);
 
             //config.NewConfig<Clinic, ClinicResponse>();
 
@@ -66,13 +66,13 @@ namespace ClincManagement.API.Mapping
             //    .Map(dest => dest.Services, src => src.ServiceType.ToString())
             //    .Map(dest => dest.TotalCost, src => src.TotalCost);
 
-            config.NewConfig<Invoice, ResponsePatientInvoice>()
-                .Map(dest => dest.Date, src => src.InvoiceDate.ToString("yyyy-MM-dd"))
-                .Map(dest => dest.InvoiceNumber, src => src.InvoiceNumber)
-                .Map(dest => dest.Amount, src => src.FinalAmountEGP)
-                .Map(dest => dest.Paid, src => src.PaidAmountEGP)
-                .Map(dest => dest.Remaining, src => src.FinalAmountEGP - src.PaidAmountEGP)
-                .Map(dest => dest.Status, src => src.Status.ToString());
+            //config.NewConfig<Invoice, ResponsePatientInvoice>()
+            //    .Map(dest => dest.Date, src => src.InvoiceDate.ToString("yyyy-MM-dd"))
+            //    .Map(dest => dest.InvoiceNumber, src => src.InvoiceNumber)
+            //    .Map(dest => dest.Amount, src => src.FinalAmountEGP)
+            //    .Map(dest => dest.Paid, src => src.PaidAmountEGP)
+            //    .Map(dest => dest.Remaining, src => src.FinalAmountEGP - src.PaidAmountEGP)
+            //    .Map(dest => dest.Status, src => src.Status.ToString());
 
             config.NewConfig<Operation, ResponsePatientOperation>()
                 .Map(dest => dest.Operation, src => src.Name)

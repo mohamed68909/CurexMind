@@ -1,7 +1,4 @@
-﻿namespace ClincManagement.API.Contracts.Stay.Respones
+﻿namespace ClincManagement.API.Contracts.Stay.Responses
 {
-    public record ResponseDeleteStay
-    {
-        string Massage { get; set; } = "Stay deleted successfully";
-    }
+    public record ResponseDeleteStay(string Message = "Stay deleted successfully");
 }

@@ -27,7 +27,9 @@ namespace ClincManagement.API.Errors
 
         public static readonly Error ConfirmationNotSupported =
             new("Payment.ConfirmationNotSupported", "The specified payment method does not support confirmation via this endpoint.", StatusCodes.Status400BadRequest);
-
+        // 🛠️ التحسين المقترح لـ GatewayFailed
+        public static Error GatewayFailure(string details) =>
+            new("Payment.GatewayFailed", $"External payment gateway failed to process the request. Details: {details}", StatusCodes.Status503ServiceUnavailable);
         public static readonly Error GatewayFailed =
             new("Payment.GatewayFailed", "External payment gateway failed to process the request.", StatusCodes.Status503ServiceUnavailable);
     }

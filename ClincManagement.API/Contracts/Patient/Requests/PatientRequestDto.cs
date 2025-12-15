@@ -18,10 +18,10 @@
         string PhoneNumber,
 
 
-        string? Email,
+        string Email,
 
 
-        string? NationalId,
+        string NationalId,
 
         string? Address,
 

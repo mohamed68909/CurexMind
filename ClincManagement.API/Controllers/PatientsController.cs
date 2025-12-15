@@ -1,4 +1,4 @@
-﻿using ClincManagement.API.Contracts.Invoice.Respones;
+﻿
 using ClincManagement.API.Contracts.Operation.Response;
 using ClincManagement.API.Contracts.Patient.Requests;
 using ClincManagement.API.Contracts.Patient.Respones;
@@ -21,7 +21,7 @@ namespace ClincManagement.API.Controllers
         {
             _patientService = patientService;
         }
-
+        [HttpGet("GetAll")]
         [HttpGet]
         [ProducesResponseType(typeof(PagedPatientResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -43,8 +43,7 @@ namespace ClincManagement.API.Controllers
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
-        [HttpPost]
-
+        [HttpPost("Add")]
         [ProducesResponseType(typeof(PatientCreateResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -80,32 +79,32 @@ namespace ClincManagement.API.Controllers
             return result.IsSuccess? Ok(new { message = "Patient deleted successfully" }) : result.ToProblem();
         }
 
-        //[HttpGet("{patientId}/appointments")]
-        //[ProducesResponseType(typeof(IEnumerable<ResponseAllAppointmentPatient>), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        //public async Task<IActionResult> GetAllAppointmentsByPatientIdAsync(Guid patientId)
-        //{
-        //    var result = await _patientService.GetAllAppointmentsByPatientIdAsync(patientId);
-        //    return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
-        //}
+        [HttpGet("{patientId}/appointments")]
+        [ProducesResponseType(typeof(IEnumerable<ResponseAllAppointmentPatient>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAllAppointmentsByPatientIdAsync(Guid patientId)
+        {
+            var result = await _patientService.GetAllAppointmentsByPatientIdAsync(patientId);
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        }
 
-        //[HttpGet("{patientId}/invoices")]
-        //[ProducesResponseType(typeof(IEnumerable<ResponsePatientInvoice>), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        //public async Task<IActionResult> GetAllInvoicesByPatientIdAsync(Guid patientId)
-        //{
-        //    var result = await _patientService.GetAllInvoicesByPatientIdAsync(patientId);
-        //    return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
-        //}
+        [HttpGet("{patientId}/invoices")]
+        [ProducesResponseType(typeof(IEnumerable<ResponsePatientInvoice>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAllInvoicesByPatientId(Guid patientId)
+        {
+            var result = await _patientService.GetAllInvoicesByPatientIdAsync(patientId);
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        }
 
-        //[HttpGet("{patientId}/stays")]
-        //[ProducesResponseType(typeof(IEnumerable<ResponsePatientStay>), StatusCodes.Status200OK)]
-        //[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        //public async Task<IActionResult> GetAllStaysByPatientIdAsync(Guid patientId)
-        //{
-        //    var result = await _patientService.GetAllStaysByPatientIdAsync(patientId);
-        //    return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
-        //}
+        [HttpGet("{patientId}/stays")]
+        [ProducesResponseType(typeof(IEnumerable<ResponsePatientStay>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAllStaysByPatientIdAsync(Guid patientId)
+        {
+            var result = await _patientService.GetAllStaysByPatientIdAsync(patientId);
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        }
 
         //[HttpGet("{patientId}/operations")]
         //[ProducesResponseType(typeof(IEnumerable<ResponsePatientOperation>), StatusCodes.Status200OK)]

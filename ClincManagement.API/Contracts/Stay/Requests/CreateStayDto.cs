@@ -4,10 +4,16 @@ namespace ClincManagement.API.Contracts.Stay.Requests
 {
     public class CreateStayRequest
     {
+        [Required]
         public Guid PatientId { get; set; }
 
+        [Required]
         public string Department { get; set; } = string.Empty;
+
+        [Required]
         public string RoomNumber { get; set; } = string.Empty;
+
+        [Required]
         public string BedNumber { get; set; } = string.Empty;
 
         public StayType StayType { get; set; }
@@ -17,5 +23,4 @@ namespace ClincManagement.API.Contracts.Stay.Requests
 
         public string? Notes { get; set; }
     }
-
 }

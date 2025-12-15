@@ -6,7 +6,8 @@ using ClincManagement.API.Contracts.Review.Requests;
 using ClincManagement.API.Contracts.Review.Respones;
 using ClincManagement.API.Errors;
 using ClincManagement.API.Services.Interface;
-//is sccusee hent doctor add price 
+using Microsoft.EntityFrameworkCore;
+
 public class DoctorService : IDoctorService
 {
     private readonly ApplicationDbContext _context;
@@ -26,101 +27,109 @@ public class DoctorService : IDoctorService
         _imageFileService = imageFileService;
     }
 
-    
+    // ✅ تم تعديل هذه الدالة لحل مشكلة الـ Transaction وإضافة السعر
     public async Task<Result<DoctorDetailsResponse>> CreateAsync(
         CreateDoctorRequest request,
         CancellationToken cancellationToken = default)
     {
-        using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+        // 1. استخدام استراتيجية التنفيذ لحل خطأ SqlServerRetryingExecutionStrategy
+        var strategy = _context.Database.CreateExecutionStrategy();
 
-        try
+        return await strategy.ExecuteAsync(async () =>
         {
-            // Validate Clinic
-            var clinic = await _context.Clinics.FindAsync(request.ClinicId);
-            if (clinic == null)
-                return Result.Failure<DoctorDetailsResponse>(DoctorErrors.ClinicNotFound);
+            using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
-            // Validate Duplicate Phone
-            if (await _userManager.Users.AnyAsync(u => u.PhoneNumber == request.PhoneNumber))
-                return Result.Failure<DoctorDetailsResponse>(UserErrors.DuplicatePhoneNumber);
-
-            // Validate Duplicate Email
-            if (!string.IsNullOrEmpty(request.Email) &&
-                await _userManager.FindByEmailAsync(request.Email) != null)
-                return Result.Failure<DoctorDetailsResponse>(UserErrors.DuplicatedEmail);
-
-            // Create User
-            var user = new ApplicationUser
+            try
             {
-                
-                FullName = request.FullName,
-                Email = request.Email,
-                UserName = request.UserName,
-                PhoneNumber = request.PhoneNumber,
-                EmailConfirmed = true
-            };
+                // Validate Clinic
+                var clinic = await _context.Clinics.FindAsync(request.ClinicId);
+                if (clinic == null)
+                    return Result.Failure<DoctorDetailsResponse>(DoctorErrors.ClinicNotFound);
 
-            var identityResult = await _userManager.CreateAsync(user);
-            if (!identityResult.Succeeded)
-            {
-                var msg = identityResult.Errors.FirstOrDefault()?.Description;
-                return Result.Failure<DoctorDetailsResponse>(new Error("Doctor.UserCreateFailed", msg!));
+                // Validate Duplicate Phone
+                if (await _userManager.Users.AnyAsync(u => u.PhoneNumber == request.PhoneNumber))
+                    return Result.Failure<DoctorDetailsResponse>(UserErrors.DuplicatePhoneNumber);
+
+                // Validate Duplicate Email
+                if (!string.IsNullOrEmpty(request.Email) &&
+                    await _userManager.FindByEmailAsync(request.Email) != null)
+                    return Result.Failure<DoctorDetailsResponse>(UserErrors.DuplicatedEmail);
+
+                // Create User
+                var user = new ApplicationUser
+                {
+                   
+                    Email = request.Email,
+                    UserName = request.UserName,
+                    PhoneNumber = request.PhoneNumber,
+                    EmailConfirmed = true
+                };
+
+                var identityResult = await _userManager.CreateAsync(user);
+                if (!identityResult.Succeeded)
+                {
+                    var msg = identityResult.Errors.FirstOrDefault()?.Description;
+                    return Result.Failure<DoctorDetailsResponse>(new Error("Doctor.UserCreateFailed", msg!));
+                }
+
+                // Upload Image
+                if (request.ProfileImage != null)
+                {
+                    var uploaded = await _imageFileService.UploadAsync(request.ProfileImage, "uploads/doctors");
+                    user.ProfileImage = uploaded;
+                }
+
+                // Create doctor entity
+                var doctor = new Doctor
+                {
+                    Id = Guid.NewGuid(),
+                    ClinicId = request.ClinicId,
+                    FullName = request.FullName,
+                    UserId = user.Id,
+                    Specialization = request.Specialization,
+                    YearsOfExperience = request.YearsOfExperience,
+                    Languages = request.Languages,
+                    CreatedById = user.Id.ToString(),
+
+                  
+                    Price = request.Price
+                };
+
+                await _context.Doctors.AddAsync(doctor, cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+
+                return Result.Success(new DoctorDetailsResponse
+                {
+                    Id = doctor.Id,
+                    FullName = doctor.FullName,
+                    Specialization = doctor.Specialization,
+                    ClinicName = clinic.Name,
+                    YearsOfExperience = doctor.YearsOfExperience,
+                    Languages = doctor.Languages,
+                    ProfileImageUrl = user.ProfileImage?.StoredFileName,
+
+                   
+                    Price = doctor.Price
+                });
             }
-
-            // Upload Image
-            if (request.ProfileImage != null)
+            catch (Exception ex)
             {
-                var uploaded = await _imageFileService.UploadAsync(request.ProfileImage, "uploads/doctors");
-                user.ProfileImage = uploaded;
-            }
+                await transaction.RollbackAsync(cancellationToken);
 
-            // Create doctor entity
-            var doctor = new Doctor
-            {
-                Id = Guid.NewGuid(),
-                ClinicId = request.ClinicId,
-                UserId = user.Id,
-               
-                Specialization = request.Specialization,
-                YearsOfExperience = request.YearsOfExperience,
-                Languages = request.Languages,
-                CreatedById = user.Id.ToString(),
                 
-            };
+                if (await _userManager.FindByNameAsync(request.UserName) is ApplicationUser u)
+                    await _userManager.DeleteAsync(u);
 
-            await _context.Doctors.AddAsync(doctor, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
+                _logger.LogError(ex, "Error creating doctor");
 
-            return Result.Success(new DoctorDetailsResponse
-            {
-                Id = doctor.Id,
-                FullName = doctor.FullName,
-                Specialization = doctor.Specialization,
-                ClinicName = clinic.Name,
-                YearsOfExperience = doctor.YearsOfExperience,
-                Languages = doctor.Languages,
-                ProfileImageUrl = user.ProfileImage.StoredFileName
-            });
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync(cancellationToken);
-
-            if (await _userManager.FindByNameAsync(request.UserName) is ApplicationUser u)
-                await _userManager.DeleteAsync(u);
-         
- 
-
-            _logger.LogError(ex, "Error creating doctor");
-
-            return Result.Failure<DoctorDetailsResponse>(
-                new Error("Doctor.CreateFailed", ex.Message));
-        }
+                return Result.Failure<DoctorDetailsResponse>(
+                    new Error("Doctor.CreateFailed", ex.Message));
+            }
+        });
     }
 
-
-    
     public async Task<Result<DoctorDetailsResponse>> GetAsync(Guid id, CancellationToken ct = default)
     {
         var doctor = await _context.Doctors
@@ -140,7 +149,11 @@ public class DoctorService : IDoctorService
             ClinicName = doctor.Clinic.Name,
             YearsOfExperience = doctor.YearsOfExperience,
             Languages = doctor.Languages,
-            ProfileImageUrl = doctor.User.ProfileImage.StoredFileName,
+
+           
+            Price = doctor.Price,
+
+            ProfileImageUrl = doctor.User?.ProfileImage?.StoredFileName,
             Reviews = doctor.Reviews.Select(r => new ReviewResponse
             {
                 Id = r.Id,
@@ -151,13 +164,12 @@ public class DoctorService : IDoctorService
         });
     }
 
-
-  
     public async Task<Result<IEnumerable<DoctorListResponse>>> GetAll(CancellationToken ct = default)
     {
         var list = await _context.Doctors
             .Include(d => d.Clinic)
-            .Include(d => d.User).ThenInclude(u => u.ProfileImage).Include(u=>u.Reviews)
+            .Include(d => d.User).ThenInclude(u => u.ProfileImage)
+            .Include(u => u.Reviews)
             .ToListAsync(ct);
 
         return Result.Success(
@@ -167,17 +179,17 @@ public class DoctorService : IDoctorService
                 FullName = d.FullName,
                 Specialization = d.Specialization,
                 ClinicName = d.Clinic.Name,
-                ProfileImageUrl = d.User.ProfileImage.StoredFileName,
-               ReviewsCount = d.Reviews.Count,
-                Rating = d.Reviews.Count == 0 ? 0 : d.Reviews.Average(r => r.Rating)
-               
+                ProfileImageUrl = d.User?.ProfileImage?.StoredFileName,
 
+             
+                Price = d.Price,
+
+                ReviewsCount = d.Reviews.Count,
+                Rating = d.Reviews.Count == 0 ? 0 : d.Reviews.Average(r => r.Rating)
             })
         );
     }
 
-
-   
     public async Task<Result<DoctorDetailsResponse>> UpdateAsync(
         Guid id,
         UpdateDoctorRequest request,
@@ -186,6 +198,7 @@ public class DoctorService : IDoctorService
         var doctor = await _context.Doctors
             .Include(d => d.User)
             .ThenInclude(u => u.ProfileImage)
+            .Include(d => d.Clinic)
             .FirstOrDefaultAsync(d => d.Id == id, ct);
 
         if (doctor == null)
@@ -212,6 +225,9 @@ public class DoctorService : IDoctorService
         doctor.YearsOfExperience = request.YearsOfExperience;
         doctor.Languages = request.Languages;
 
+       
+        doctor.Price = request.Price;
+
         // Update image
         if (request.NewProfileImage != null)
         {
@@ -224,11 +240,20 @@ public class DoctorService : IDoctorService
 
         await _context.SaveChangesAsync(ct);
 
-        return await GetAsync(id, ct);
+      
+        return Result.Success(new DoctorDetailsResponse
+        {
+            Id = doctor.Id,
+            FullName = doctor.FullName,
+            Specialization = doctor.Specialization,
+            ClinicName = doctor.Clinic?.Name,
+            YearsOfExperience = doctor.YearsOfExperience,
+            Languages = doctor.Languages,
+            Price = doctor.Price,
+            ProfileImageUrl = user.ProfileImage?.StoredFileName
+        });
     }
 
-
-   
     public async Task<Result<bool>> DeleteAsync(Guid id, CancellationToken ct = default)
     {
         var doc = await _context.Doctors
@@ -249,8 +274,6 @@ public class DoctorService : IDoctorService
         return Result.Success(true);
     }
 
-
- 
     public async Task<Result<AddReviewResponse>> AddReview(
         Guid doctorId, string userId, AddReviewRequest req, CancellationToken ct = default)
     {
@@ -265,7 +288,7 @@ public class DoctorService : IDoctorService
         {
             Id = Guid.NewGuid(),
             DoctorId = doctorId,
-            PatientId = Guid.Parse( userId),
+            PatientId = Guid.Parse(userId),
             Rating = req.Rating,
             Comment = req.Comment,
             CreatedAt = DateTime.UtcNow
