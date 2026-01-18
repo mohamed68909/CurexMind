@@ -53,21 +53,7 @@
                    .HasDatabaseName("IX_Payment_Status");
 
 
-            builder.HasData(
-       new Payment
-       {
-           Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-           AppointmentId = Guid.Parse("ef87e6b2-27b3-4a69-a28b-90064712980f"),
-           PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-           InvoiceId = Guid.Parse("55555555-5555-5555-5555-555555555555"),
-           Amount = 250.00m,
-           Method = PaymentMethod.Wallet,
-           Status = PaymentStatus.Success,
-           TransactionId = "TXN123456789",
-           CreatedAt = new DateTime(2025, 12, 15, 10, 0, 0),  // قيمة ثابتة
-           ConfirmedAt = new DateTime(2025, 12, 15, 10, 5, 0) // قيمة ثابتة
-       }
-   );
+    
 
 
         }

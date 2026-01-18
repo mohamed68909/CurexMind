@@ -3,6 +3,8 @@ using ClincManagement.API.Contracts.Appinments.Requests;
 using ClincManagement.API.Contracts.Appinments.Respones;
 
 using ClincManagement.API.Contracts.Appointments.Responses;
+using ClincManagement.API.Contracts.Appointments.Responses.ClincManagement.API.Contracts.Appointments.Responses;
+using ClincManagement.API.Contracts.Doctors.Respones;
 using ClincManagement.API.Errors;
 using ClincManagement.API.Services.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -156,45 +158,137 @@ namespace ClincManagement.API.Services
             return Result.Success(response);
         }
 
-        public async Task<Result<AppointmentDetailsResponse>> GetAppointmentsByPatientIdAsync(Guid patientId, CancellationToken cancel)
+        public async Task<Result<AppointmentDetailsResponse>> GetAppointmentsByIdAsync(
+            Guid appointmentId,
+            CancellationToken cancel)
         {
             var appointment = await _context.Appointments
                 .Include(a => a.Doctor)
                     .ThenInclude(d => d.Clinic)
-                .FirstOrDefaultAsync(a => a.PatientId == patientId && !a.IsDeleted, cancel);
+                .Include(a => a.Patient)
+                    .ThenInclude(p => p.User)
+               
+                .FirstOrDefaultAsync(a => a.Id == appointmentId && !a.IsDeleted, cancel);
 
-            if (appointment == null) return Result.Failure<AppointmentDetailsResponse>(AppointmentErrors.NotFound);
+            if (appointment == null)
+                return Result.Failure<AppointmentDetailsResponse>(AppointmentErrors.NotFound);
 
             var response = new AppointmentDetailsResponse
             {
                 AppointmentId = appointment.Id.ToString(),
                 Status = appointment.Status.ToString(),
-                ReferenceCode = "",
-                InvoiceId = "",
-                PaymentStatus = "",
+                PaymentStatus = appointment.PaymentStatus.ToString(),
+
                 DoctorDetails = new DoctorDetails
                 {
                     Name = appointment.Doctor?.FullName ?? "No Doctor",
                     ClinicName = appointment.Doctor?.Clinic?.Name ?? "No Clinic"
                 },
+
+                PatientSummary = appointment.Patient == null
+                    ? new PatientSummary()
+                    : new PatientSummary
+                    {
+                        PatientId = appointment.Patient.PatientId.ToString(),
+                        Name = appointment.Patient.User?.FullName ?? string.Empty,
+                        Gender = appointment.Patient.Gender.ToString(),
+
+                        Age = appointment.Patient.DateOfBirth == null
+                            ? 0
+                            : DateTime.UtcNow.Year - appointment.Patient.DateOfBirth.Year,
+
+                        Phone = appointment.Patient.User?.PhoneNumber ?? string.Empty,
+                        NationalId = appointment.Patient.NationalId ?? string.Empty,
+                        ProfileImageUrl = appointment.Patient.User?.ProfileImage
+                    },
+
                 BookingTime = new BookingTime
                 {
                     Date = appointment.AppointmentDate.ToString("yyyy-MM-dd"),
-                    Time = appointment.AppointmentTime.ToString(@"hh\:mm")
+                    Time = appointment.AppointmentTime.ToString(@"hh\:mm"),
+                    DurationMinutes = appointment.Duration
                 },
-                FinancialSummary = new FinancialSummary
+
+                Notes = appointment.Notes ?? string.Empty,
+
+                ActivityLog = new List<ActivityLogItem>
+        {
+            new ActivityLogItem
+            {
+                Action = "Created",
+                By = appointment.CreatedBy?.FullName ?? "System",
+                Date = appointment.CreatedOn.ToString("yyyy-MM-dd") ?? string.Empty
+            },
+            appointment.UpdatedOn == null
+                ? null
+                : new ActivityLogItem
                 {
-                    ConsultationFees = 0,
-                    Discount = 0,
-                    TotalPaid = 0
-                },
-                Notes = appointment.Notes
+                    Action = "Last Modified",
+                    By = appointment.UpdatedBy?.FullName ?? "System",
+                    Date = appointment.UpdatedOn.Value.ToString("yyyy-MM-dd")
+                }
+        }
+                .Where(x => x != null)
+                .ToList()
             };
 
             return Result.Success(response);
         }
 
-        public async Task<Result<ResponserAppointmentDto>> CreateAppointmentPatientAsync(BookAppointmentRequest request, Guid patientId, CancellationToken cancel)
+
+        public async Task<Result<List<MyAppointmentResponse>>>
+GetMyAppointmentsAsync(
+    Guid patientId,
+    AppointmentFilter filter,
+    CancellationToken cancel)
+        {
+            var query = _context.Appointments
+      .Where(a => a.PatientId == patientId && !a.IsDeleted)
+      .Include(a => a.Doctor)
+          .ThenInclude(d => d.Clinic)
+      .AsQueryable();
+
+
+            var today = DateTime.UtcNow.Date;
+
+            query = filter switch
+            {
+                AppointmentFilter.Upcoming =>
+                    query.Where(a => a.AppointmentDate >= today),
+
+                AppointmentFilter.Past =>
+                    query.Where(a => a.AppointmentDate < today),
+
+                _ => query
+            };
+
+            var appointments = await query
+                .OrderByDescending(a => a.AppointmentDate)
+                .ThenByDescending(a => a.AppointmentTime)
+                .ToListAsync(cancel);
+
+            if (!appointments.Any())
+                return Result.Failure<List<MyAppointmentResponse>>(AppointmentErrors.NotFound);
+
+            var response = appointments.Select(a => new MyAppointmentResponse(
+    AppointmentId: a.Id,
+    DoctorName: a.Doctor?.FullName ?? "No Doctor",
+    Specialty: a.Doctor?.Specialization ?? "General",
+    ClinicName: a.Doctor?.Clinic?.Name ?? "No Clinic",
+    Date: a.AppointmentDate,
+    Time: a.AppointmentTime.ToString(@"hh\:mm"),
+    Type: a.Type,
+    Status: a.Status,
+    IsPaid: a.Status == AppointmentStatus.Completed,
+    IsConfirmed: a.Status == AppointmentStatus.Confirmed
+)).ToList();
+
+
+            return Result.Success(response);
+        }
+
+
+        public async Task<Result<ResponserAppointmentDto>> CreateAppointmentPatientAsync(BookAppointmentRequest request, Guid User, CancellationToken cancel)
         {
             var doctor = await _context.Doctors
                 .Include(d => d.Clinic)
@@ -214,7 +308,7 @@ namespace ClincManagement.API.Services
             var appointment = new Appointment
             {
                 Id = Guid.NewGuid(),
-                PatientId = patientId,
+                PatientId = User,
                 DoctorId = doctor.Id,
                 ClinicId = doctor.ClinicId,
                 AppointmentDate = request.Date.Date,
@@ -224,7 +318,8 @@ namespace ClincManagement.API.Services
                 Status = AppointmentStatus.Waiting,
                 Notes = request.ReasonForVisit,
                 UpdatedOn = DateTime.UtcNow,
-                IsDeleted = false
+                IsDeleted = false,
+                CreatedById="System"
             };
 
             _context.Appointments.Add(appointment);

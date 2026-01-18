@@ -28,7 +28,7 @@
     {
         public Guid Id { get; init; }
         public string PatientName { get; init; } = string.Empty;
-        public int Rating { get; init; }
+        public double Rating { get; init; } = 5;
         public string Comment { get; init; } = string.Empty;
         public DateTime CreatedAt { get; init; }
     }

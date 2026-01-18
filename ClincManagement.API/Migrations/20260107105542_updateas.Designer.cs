@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClincManagement.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251202014943_up")]
-    partial class up
+    [Migration("20260107105542_updateas")]
+    partial class updateas
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -156,19 +156,19 @@ namespace ClincManagement.API.Migrations
                             Id = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
                             AccessFailedCount = 0,
                             ConcurrencyStamp = "admin-concurrency-stamp",
-                            Email = "dev@mohamed.com",
+                            Email = "Admin@mohamed.com",
                             EmailConfirmed = true,
                             FullName = "Mohamed Ashraf",
                             IsDisabled = false,
                             LockoutEnabled = false,
-                            NormalizedEmail = "DEV@MOHAMED.COM",
-                            NormalizedUserName = "DEV@MOHAMED.COM",
+                            NormalizedEmail = "ADMIN@MOHAMED.COM",
+                            NormalizedUserName = "ADMIN@MOHAMED.COM",
                             PasswordHash = "AQAAAAIAAYagAAAAEKj70KPmPc7BxyRhD9MuptCGolRkbmTp27lM/5HLVQxdU/qZw0HwYDAGR9JyB4c19Q==",
                             PhoneNumber = "01234567890",
                             PhoneNumberConfirmed = true,
                             SecurityStamp = "admin-security-stamp",
                             TwoFactorEnabled = false,
-                            UserName = "dev@mohamed.com"
+                            UserName = "Admin@mohamed.com"
                         });
                 });
 
@@ -208,6 +208,9 @@ namespace ClincManagement.API.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(30);
 
+                    b.Property<Guid?>("InvoiceId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -217,6 +220,9 @@ namespace ClincManagement.API.Migrations
 
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasMaxLength(20)
@@ -232,6 +238,9 @@ namespace ClincManagement.API.Migrations
                     b.Property<DateTime>("UpdatedOn")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("userId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AppointmentDate")
@@ -241,12 +250,16 @@ namespace ClincManagement.API.Migrations
 
                     b.HasIndex("DoctorId");
 
+                    b.HasIndex("InvoiceId");
+
                     b.HasIndex("PatientId");
 
                     b.HasIndex("Status")
                         .HasDatabaseName("IX_AppointmentStatus");
 
                     b.HasIndex("UpdatedById");
+
+                    b.HasIndex("userId");
 
                     b.ToTable("Appointments");
                 });
@@ -300,6 +313,60 @@ namespace ClincManagement.API.Migrations
                             IsActive = true,
                             Location = "123 Main St, Cityville",
                             Name = "Main Clinic"
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333002"),
+                            CreatedDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Downtown branch providing general medicine and pediatrics.",
+                            IsActive = true,
+                            Location = "456 Downtown Ave, Cityville",
+                            Name = "Downtown Clinic"
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333003"),
+                            CreatedDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Uptown clinic specializing in cardiology and neurology.",
+                            IsActive = true,
+                            Location = "789 Uptown Rd, Cityville",
+                            Name = "Uptown Clinic"
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333004"),
+                            CreatedDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Eastside clinic for dermatology and orthopedics.",
+                            IsActive = true,
+                            Location = "321 Eastside Blvd, Cityville",
+                            Name = "Eastside Clinic"
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333005"),
+                            CreatedDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "West End clinic offering gynecology and ENT services.",
+                            IsActive = true,
+                            Location = "654 West End St, Cityville",
+                            Name = "West End Clinic"
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333006"),
+                            CreatedDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Riverside clinic focusing on ophthalmology and psychiatry.",
+                            IsActive = true,
+                            Location = "987 Riverside Dr, Cityville",
+                            Name = "Riverside Clinic"
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333007"),
+                            CreatedDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Greenfield clinic offering comprehensive medical care.",
+                            IsActive = true,
+                            Location = "159 Greenfield Ln, Cityville",
+                            Name = "Greenfield Clinic"
                         });
                 });
 
@@ -663,11 +730,15 @@ namespace ClincManagement.API.Migrations
                     b.Property<Guid>("DoctorId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("PatientId")
+                    b.Property<Guid?>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Rating")
                         .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -676,6 +747,8 @@ namespace ClincManagement.API.Migrations
                     b.HasIndex("DoctorId");
 
                     b.HasIndex("PatientId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
 
@@ -687,8 +760,8 @@ namespace ClincManagement.API.Migrations
                             Comment = "Excellent service!",
                             CreatedAt = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             DoctorId = new Guid("22222222-2222-2222-2222-222222222222"),
-                            PatientId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            Rating = 5
+                            Rating = 5,
+                            UserId = "f70250f2-ece4-44da-a1a8-ffad173d3dde"
                         });
                 });
 
@@ -712,6 +785,21 @@ namespace ClincManagement.API.Migrations
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
                             Name = "Consultation"
+                        },
+                        new
+                        {
+                            Id = new Guid("55555555-5555-5555-5555-555555555555"),
+                            Name = "Installation"
+                        },
+                        new
+                        {
+                            Id = new Guid("66666666-6666-6666-6666-666666666666"),
+                            Name = "Maintenance"
+                        },
+                        new
+                        {
+                            Id = new Guid("77777777-7777-7777-7777-777777777777"),
+                            Name = "Emergency Repair"
                         });
                 });
 
@@ -816,6 +904,9 @@ namespace ClincManagement.API.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Specialization")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -833,6 +924,10 @@ namespace ClincManagement.API.Migrations
 
                     b.Property<int>("YearsOfExperience")
                         .HasColumnType("int");
+
+                    b.Property<string>("bio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -855,9 +950,11 @@ namespace ClincManagement.API.Migrations
                             FullName = "Dr. John Smith",
                             IsDeleted = false,
                             Languages = "English, Spanish",
+                            Price = 0m,
                             Specialization = "Cardiology",
                             UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
-                            YearsOfExperience = 12
+                            YearsOfExperience = 12,
+                            bio = ""
                         });
                 });
 
@@ -1070,6 +1167,10 @@ namespace ClincManagement.API.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("ClincManagement.API.Entities.Invoice", "Invoice")
+                        .WithMany()
+                        .HasForeignKey("InvoiceId");
+
                     b.HasOne("ClincManagement.API.Entities.Patient", "Patient")
                         .WithMany("Appointments")
                         .HasForeignKey("PatientId")
@@ -1080,13 +1181,21 @@ namespace ClincManagement.API.Migrations
                         .WithMany()
                         .HasForeignKey("UpdatedById");
 
+                    b.HasOne("ClincManagement.API.Entities.ApplicationUser", "user")
+                        .WithMany()
+                        .HasForeignKey("userId");
+
                     b.Navigation("Clinic");
 
                     b.Navigation("Doctor");
 
+                    b.Navigation("Invoice");
+
                     b.Navigation("Patient");
 
                     b.Navigation("UpdatedBy");
+
+                    b.Navigation("user");
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Invoice", b =>
@@ -1204,9 +1313,13 @@ namespace ClincManagement.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ClincManagement.API.Entities.Patient", "Patient")
+                    b.HasOne("ClincManagement.API.Entities.Patient", null)
                         .WithMany("Reviews")
-                        .HasForeignKey("PatientId")
+                        .HasForeignKey("PatientId");
+
+                    b.HasOne("ClincManagement.API.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1214,7 +1327,7 @@ namespace ClincManagement.API.Migrations
 
                     b.Navigation("Doctor");
 
-                    b.Navigation("Patient");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Stay", b =>

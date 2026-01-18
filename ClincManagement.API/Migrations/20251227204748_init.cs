@@ -278,6 +278,7 @@ namespace ClincManagement.API.Migrations
                     Specialization = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     YearsOfExperience = table.Column<int>(type: "int", nullable: false),
                     Languages = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     ClinicId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
@@ -317,7 +318,7 @@ namespace ClincManagement.API.Migrations
                     Department = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     RoomNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     BedNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    StayType = table.Column<int>(type: "int", nullable: false),
+                    StayType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -328,53 +329,6 @@ namespace ClincManagement.API.Migrations
                     table.PrimaryKey("PK_Stays", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Stays_Patients_PatientId",
-                        column: x => x.PatientId,
-                        principalTable: "Patients",
-                        principalColumn: "PatientId");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Appointments",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DoctorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClinicId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AppointmentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    AppointmentTime = table.Column<TimeSpan>(type: "time", nullable: false),
-                    Duration = table.Column<int>(type: "int", nullable: false, defaultValue: 30),
-                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    Type = table.Column<int>(type: "int", maxLength: 50, nullable: false),
-                    Status = table.Column<int>(type: "int", maxLength: 20, nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedById = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UpdatedById = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    DeletedById = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DeletedOn = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Appointments", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Appointments_AspNetUsers_UpdatedById",
-                        column: x => x.UpdatedById,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Appointments_Clinics_ClinicId",
-                        column: x => x.ClinicId,
-                        principalTable: "Clinics",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Appointments_Doctors_DoctorId",
-                        column: x => x.DoctorId,
-                        principalTable: "Doctors",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Appointments_Patients_PatientId",
                         column: x => x.PatientId,
                         principalTable: "Patients",
                         principalColumn: "PatientId");
@@ -507,6 +461,60 @@ namespace ClincManagement.API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Appointments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PatientId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DoctorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ClinicId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AppointmentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    AppointmentTime = table.Column<TimeSpan>(type: "time", nullable: false),
+                    Duration = table.Column<int>(type: "int", nullable: false, defaultValue: 30),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Type = table.Column<int>(type: "int", maxLength: 50, nullable: false),
+                    Status = table.Column<int>(type: "int", maxLength: 20, nullable: false),
+                    PaymentStatus = table.Column<int>(type: "int", nullable: false),
+                    InvoiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedById = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UpdatedById = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    DeletedById = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DeletedOn = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Appointments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Appointments_AspNetUsers_UpdatedById",
+                        column: x => x.UpdatedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Appointments_Clinics_ClinicId",
+                        column: x => x.ClinicId,
+                        principalTable: "Clinics",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Appointments_Doctors_DoctorId",
+                        column: x => x.DoctorId,
+                        principalTable: "Doctors",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Appointments_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalTable: "Invoices",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Appointments_Patients_PatientId",
+                        column: x => x.PatientId,
+                        principalTable: "Patients",
+                        principalColumn: "PatientId");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Payments",
                 columns: table => new
                 {
@@ -556,17 +564,32 @@ namespace ClincManagement.API.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "FullName", "IsDisabled", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { "4E14506C-D3C0-4AE3-8616-5EB95A764358", 0, "admin-concurrency-stamp", "dev@mohamed.com", true, "Mohamed Ashraf", false, false, null, "DEV@MOHAMED.COM", "DEV@MOHAMED.COM", "AQAAAAIAAYagAAAAEKj70KPmPc7BxyRhD9MuptCGolRkbmTp27lM/5HLVQxdU/qZw0HwYDAGR9JyB4c19Q==", "01234567890", true, "admin-security-stamp", false, "dev@mohamed.com" });
+                values: new object[] { "4E14506C-D3C0-4AE3-8616-5EB95A764358", 0, "admin-concurrency-stamp", "Admin@mohamed.com", true, "Mohamed Ashraf", false, false, null, "ADMIN@MOHAMED.COM", "ADMIN@MOHAMED.COM", "AQAAAAIAAYagAAAAEKj70KPmPc7BxyRhD9MuptCGolRkbmTp27lM/5HLVQxdU/qZw0HwYDAGR9JyB4c19Q==", "01234567890", true, "admin-security-stamp", false, "Admin@mohamed.com" });
 
             migrationBuilder.InsertData(
                 table: "Clinics",
                 columns: new[] { "Id", "CreatedDate", "Description", "IsActive", "Location", "Name" },
-                values: new object[] { new Guid("33333333-3333-3333-3333-333333333333"), new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "This is the main clinic located in the city center.", true, "123 Main St, Cityville", "Main Clinic" });
+                values: new object[,]
+                {
+                    { new Guid("33333333-3333-3333-3333-333333333002"), new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Downtown branch providing general medicine and pediatrics.", true, "456 Downtown Ave, Cityville", "Downtown Clinic" },
+                    { new Guid("33333333-3333-3333-3333-333333333003"), new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Uptown clinic specializing in cardiology and neurology.", true, "789 Uptown Rd, Cityville", "Uptown Clinic" },
+                    { new Guid("33333333-3333-3333-3333-333333333004"), new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Eastside clinic for dermatology and orthopedics.", true, "321 Eastside Blvd, Cityville", "Eastside Clinic" },
+                    { new Guid("33333333-3333-3333-3333-333333333005"), new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "West End clinic offering gynecology and ENT services.", true, "654 West End St, Cityville", "West End Clinic" },
+                    { new Guid("33333333-3333-3333-3333-333333333006"), new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Riverside clinic focusing on ophthalmology and psychiatry.", true, "987 Riverside Dr, Cityville", "Riverside Clinic" },
+                    { new Guid("33333333-3333-3333-3333-333333333007"), new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Greenfield clinic offering comprehensive medical care.", true, "159 Greenfield Ln, Cityville", "Greenfield Clinic" },
+                    { new Guid("33333333-3333-3333-3333-333333333333"), new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "This is the main clinic located in the city center.", true, "123 Main St, Cityville", "Main Clinic" }
+                });
 
             migrationBuilder.InsertData(
                 table: "ServiceTypes",
                 columns: new[] { "Id", "Name" },
-                values: new object[] { new Guid("44444444-4444-4444-4444-444444444444"), "Consultation" });
+                values: new object[,]
+                {
+                    { new Guid("44444444-4444-4444-4444-444444444444"), "Consultation" },
+                    { new Guid("55555555-5555-5555-5555-555555555555"), "Installation" },
+                    { new Guid("66666666-6666-6666-6666-666666666666"), "Maintenance" },
+                    { new Guid("77777777-7777-7777-7777-777777777777"), "Emergency Repair" }
+                });
 
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
@@ -575,8 +598,8 @@ namespace ClincManagement.API.Migrations
 
             migrationBuilder.InsertData(
                 table: "Doctors",
-                columns: new[] { "Id", "ClinicId", "CreatedById", "CreatedOn", "DeletedById", "DeletedOn", "FullName", "IsDeleted", "Languages", "Specialization", "UpdatedById", "UpdatedOn", "UserId", "YearsOfExperience" },
-                values: new object[] { new Guid("22222222-2222-2222-2222-222222222222"), new Guid("33333333-3333-3333-3333-333333333333"), "system", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, "Dr. John Smith", false, "English, Spanish", "Cardiology", null, null, "4E14506C-D3C0-4AE3-8616-5EB95A764358", 12 });
+                columns: new[] { "Id", "ClinicId", "CreatedById", "CreatedOn", "DeletedById", "DeletedOn", "FullName", "IsDeleted", "Languages", "Price", "Specialization", "UpdatedById", "UpdatedOn", "UserId", "YearsOfExperience" },
+                values: new object[] { new Guid("22222222-2222-2222-2222-222222222222"), new Guid("33333333-3333-3333-3333-333333333333"), "system", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, "Dr. John Smith", false, "English, Spanish", 0m, "Cardiology", null, null, "4E14506C-D3C0-4AE3-8616-5EB95A764358", 12 });
 
             migrationBuilder.InsertData(
                 table: "Patients",
@@ -606,7 +629,7 @@ namespace ClincManagement.API.Migrations
             migrationBuilder.InsertData(
                 table: "Stays",
                 columns: new[] { "Id", "BedNumber", "Department", "EndDate", "Notes", "PatientId", "RoomNumber", "StartDate", "Status", "StayType" },
-                values: new object[] { new Guid("77777777-7777-7777-7777-777777777777"), "B1", "General Medicine", null, "Patient admitted for observation.", new Guid("11111111-1111-1111-1111-111111111111"), "101A", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active", 0 });
+                values: new object[] { new Guid("77777777-7777-7777-7777-777777777777"), "B1", "General Medicine", null, "Patient admitted for observation.", new Guid("11111111-1111-1111-1111-111111111111"), "101A", new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Active", "Inpatient" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AppointmentDate",
@@ -622,6 +645,11 @@ namespace ClincManagement.API.Migrations
                 name: "IX_Appointments_DoctorId",
                 table: "Appointments",
                 column: "DoctorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Appointments_InvoiceId",
+                table: "Appointments",
+                column: "InvoiceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_PatientId",

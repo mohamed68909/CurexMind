@@ -7,7 +7,7 @@
 
 
 
-        public int Rating { get; set; }
+        public int Rating { get; set; } 
 
 
         public string Comment { get; set; }
@@ -18,8 +18,9 @@
         public Guid? ClinicId { get; set; }
         public Clinic Clinic { get; set; } = default!;
 
-        public Guid PatientId { get; set; }
-        public Patient Patient { get; set; } = default!;
+        public string UserId { get; set; }
+        public ApplicationUser User { get; set; }
+
         public Guid DoctorId { get; set; } = default!;
 
         public Doctor Doctor { get; set; } = default!;

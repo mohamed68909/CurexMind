@@ -153,19 +153,19 @@ namespace ClincManagement.API.Migrations
                             Id = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
                             AccessFailedCount = 0,
                             ConcurrencyStamp = "admin-concurrency-stamp",
-                            Email = "dev@mohamed.com",
+                            Email = "Admin@mohamed.com",
                             EmailConfirmed = true,
                             FullName = "Mohamed Ashraf",
                             IsDisabled = false,
                             LockoutEnabled = false,
-                            NormalizedEmail = "DEV@MOHAMED.COM",
-                            NormalizedUserName = "DEV@MOHAMED.COM",
+                            NormalizedEmail = "ADMIN@MOHAMED.COM",
+                            NormalizedUserName = "ADMIN@MOHAMED.COM",
                             PasswordHash = "AQAAAAIAAYagAAAAEKj70KPmPc7BxyRhD9MuptCGolRkbmTp27lM/5HLVQxdU/qZw0HwYDAGR9JyB4c19Q==",
                             PhoneNumber = "01234567890",
                             PhoneNumberConfirmed = true,
                             SecurityStamp = "admin-security-stamp",
                             TwoFactorEnabled = false,
-                            UserName = "dev@mohamed.com"
+                            UserName = "Admin@mohamed.com"
                         });
                 });
 
@@ -218,6 +218,9 @@ namespace ClincManagement.API.Migrations
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasMaxLength(20)
                         .HasColumnType("int");
@@ -231,6 +234,9 @@ namespace ClincManagement.API.Migrations
 
                     b.Property<DateTime>("UpdatedOn")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("userId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -249,6 +255,8 @@ namespace ClincManagement.API.Migrations
                         .HasDatabaseName("IX_AppointmentStatus");
 
                     b.HasIndex("UpdatedById");
+
+                    b.HasIndex("userId");
 
                     b.ToTable("Appointments");
                 });
@@ -695,21 +703,6 @@ namespace ClincManagement.API.Migrations
                         .HasDatabaseName("IX_Payment_Status");
 
                     b.ToTable("Payments", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            Amount = 250.00m,
-                            AppointmentId = new Guid("ef87e6b2-27b3-4a69-a28b-90064712980f"),
-                            ConfirmedAt = new DateTime(2025, 12, 15, 10, 5, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2025, 12, 15, 10, 0, 0, 0, DateTimeKind.Unspecified),
-                            InvoiceId = new Guid("55555555-5555-5555-5555-555555555555"),
-                            Method = 3,
-                            PatientId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            Status = "Success",
-                            TransactionId = "TXN123456789"
-                        });
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Review", b =>
@@ -734,11 +727,15 @@ namespace ClincManagement.API.Migrations
                     b.Property<Guid>("DoctorId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("PatientId")
+                    b.Property<Guid?>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Rating")
                         .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -747,6 +744,8 @@ namespace ClincManagement.API.Migrations
                     b.HasIndex("DoctorId");
 
                     b.HasIndex("PatientId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
 
@@ -758,8 +757,8 @@ namespace ClincManagement.API.Migrations
                             Comment = "Excellent service!",
                             CreatedAt = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             DoctorId = new Guid("22222222-2222-2222-2222-222222222222"),
-                            PatientId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            Rating = 5
+                            Rating = 5,
+                            UserId = "f70250f2-ece4-44da-a1a8-ffad173d3dde"
                         });
                 });
 
@@ -923,6 +922,10 @@ namespace ClincManagement.API.Migrations
                     b.Property<int>("YearsOfExperience")
                         .HasColumnType("int");
 
+                    b.Property<string>("bio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ClinicId");
@@ -947,7 +950,8 @@ namespace ClincManagement.API.Migrations
                             Price = 0m,
                             Specialization = "Cardiology",
                             UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
-                            YearsOfExperience = 12
+                            YearsOfExperience = 12,
+                            bio = ""
                         });
                 });
 
@@ -1174,6 +1178,10 @@ namespace ClincManagement.API.Migrations
                         .WithMany()
                         .HasForeignKey("UpdatedById");
 
+                    b.HasOne("ClincManagement.API.Entities.ApplicationUser", "user")
+                        .WithMany()
+                        .HasForeignKey("userId");
+
                     b.Navigation("Clinic");
 
                     b.Navigation("Doctor");
@@ -1183,6 +1191,8 @@ namespace ClincManagement.API.Migrations
                     b.Navigation("Patient");
 
                     b.Navigation("UpdatedBy");
+
+                    b.Navigation("user");
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Invoice", b =>
@@ -1300,9 +1310,13 @@ namespace ClincManagement.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ClincManagement.API.Entities.Patient", "Patient")
+                    b.HasOne("ClincManagement.API.Entities.Patient", null)
                         .WithMany("Reviews")
-                        .HasForeignKey("PatientId")
+                        .HasForeignKey("PatientId");
+
+                    b.HasOne("ClincManagement.API.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1310,7 +1324,7 @@ namespace ClincManagement.API.Migrations
 
                     b.Navigation("Doctor");
 
-                    b.Navigation("Patient");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ClincManagement.API.Entities.Stay", b =>

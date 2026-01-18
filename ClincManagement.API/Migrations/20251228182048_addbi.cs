@@ -6,31 +6,31 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ClincManagement.API.Migrations
 {
     /// <inheritdoc />
-    public partial class @int : Migration
+    public partial class addbi : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<decimal>(
-                name: "Price",
+            migrationBuilder.AddColumn<string>(
+                name: "bio",
                 table: "Doctors",
-                type: "decimal(18,2)",
+                type: "nvarchar(max)",
                 nullable: false,
-                defaultValue: 0m);
+                defaultValue: "");
 
             migrationBuilder.UpdateData(
                 table: "Doctors",
                 keyColumn: "Id",
                 keyValue: new Guid("22222222-2222-2222-2222-222222222222"),
-                column: "Price",
-                value: 0m);
+                column: "bio",
+                value: "");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Price",
+                name: "bio",
                 table: "Doctors");
         }
     }

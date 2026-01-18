@@ -21,36 +21,39 @@ public class AppointmentsController : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
 
-    [HttpGet("patient/{patientId}")]
-    [ActionName("GetAppointmentsByPatientId")]
-    public async Task<IActionResult> GetAppointmentsByPatientId([FromRoute] Guid patientId, CancellationToken cancel)
+    [HttpGet("patient/{appointmentId}")]
+   
+    public async Task<IActionResult> GetAppointmentsById([FromRoute] Guid appointmentId, CancellationToken cancel)
     {
-        var result = await _appointmentService.GetAppointmentsByPatientIdAsync(patientId, cancel);
+        var result = await _appointmentService.GetAppointmentsByIdAsync(appointmentId, cancel);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
 
     [HttpPost("AddAppointment")]
-    [ActionName("AddAppointment")]
+
     public async Task<IActionResult> CreateAppointment([FromBody] CreateAppointmentDto request, CancellationToken cancel)
     {
         var result = await _appointmentService.CreateAppointmentAsync(request, cancel);
         return result.IsSuccess
-            ? CreatedAtAction(nameof(GetAppointmentsByPatientId), new { patientId = result.Value.AppointmentId }, result.Value)
+            ? CreatedAtAction(nameof(GetAppointmentsById), new { patientId = result.Value.AppointmentId }, result.Value)
             : result.ToProblem();
     }
 
     [HttpPost("patient/{patientId}/book")]
-    [ActionName("BookAppointmentByPatient")]
     public async Task<IActionResult> CreateAppointmentPatient([FromRoute] Guid patientId, [FromBody] BookAppointmentRequest request, CancellationToken cancel)
     {
         var result = await _appointmentService.CreateAppointmentPatientAsync(request, patientId, cancel);
         return result.IsSuccess
-            ? CreatedAtAction(nameof(GetAppointmentsByPatientId), new { patientId = patientId }, result.Value)
-            : result.ToProblem();
+      ? CreatedAtAction(
+          nameof(GetAppointmentsById),
+          new { appointmentId = result.Value.AppointmentId },
+          result.Value)
+      : result.ToProblem();
+
     }
 
     [HttpPut("UpdateAppointment")]
-    [ActionName("UpdateAppointment")]
+ 
     public async Task<IActionResult> UpdateAppointment([FromBody] UpdateAppointmentDto request, CancellationToken cancel)
     {
         var result = await _appointmentService.UpdateAppointmentAsync(request, cancel);
@@ -64,4 +67,15 @@ public class AppointmentsController : ControllerBase
         var result = await _appointmentService.DeleteAppointmentAsync(appointmentId, cancel);
         return result.IsSuccess ? NoContent() : result.ToProblem();
     }
+    [HttpGet("patient/{patientId}/my-appointments")]
+    [ActionName("GetMyAppointments")]
+    public async Task<IActionResult> GetMyAppointments(
+    [FromRoute] Guid patientId,
+    [FromQuery] AppointmentFilter filter,
+    CancellationToken cancel)
+    {
+        var result = await _appointmentService.GetMyAppointmentsAsync(patientId, filter, cancel);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+
 }

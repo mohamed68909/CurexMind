@@ -21,40 +21,43 @@ public class DashboardService : IDashboardService
     {
         try
         {
-            var today = DateTime.Today.Date;
+            var today = DateTime.Today;
 
             var summary = new DashboardSummaryDto
             {
-                // ... (مقاييس عليا) ...
-                TotalPatients = await _context.Patients.CountAsync(),
+                TotalPatients = await _context.Patients
+                    .AsNoTracking()
+                    .CountAsync(),
+
                 TodayAppointmentsCount = await _context.Appointments
-                    .Where(a => a.AppointmentDate.Date == today)
+                    .AsNoTracking()
+                    .Where(a => EF.Functions.DateDiffDay(a.AppointmentDate, today) == 0)
                     .CountAsync(),
+
                 UnpaidInvoicesCount = await _context.Invoices
+                    .AsNoTracking()
                     .Where(i => i.Status == InvoiceStatus.Due || i.Status == InvoiceStatus.Partial)
                     .CountAsync(),
+
                 UnpaidInvoicesAmountEGP = await _context.Invoices
+                    .AsNoTracking()
                     .Where(i => i.Status == InvoiceStatus.Due || i.Status == InvoiceStatus.Partial)
-                    .SumAsync(i => i.FinalAmountEGP - i.PaidAmountEGP),
+                    .SumAsync(i => (decimal?)(i.FinalAmountEGP - i.PaidAmountEGP)) ?? 0,
+
                 NewPatientsToday = await _context.Patients
-                    .Where(p => p.CreatedOn.Date == today)
+                    .AsNoTracking()
+                    .Where(p => EF.Functions.DateDiffDay(p.CreatedOn, today) == 0)
                     .CountAsync()
             };
 
-
-            // **جداول التفاصيل**
-
-            // التصحيح في هذا الجزء
             summary.TodayAppointments = await _context.Appointments
+                .AsNoTracking()
                 .Include(a => a.Patient).ThenInclude(p => p.User)
                 .Include(a => a.Doctor)
-
-                .Where(a => a.AppointmentDate.Date == today)
-                .OrderBy(a => a.AppointmentTime) // 🚀 التصحيح: الترتيب يكون على خاصية TimeSpan القابلة للترجمة
-
+                .Where(a => EF.Functions.DateDiffDay(a.AppointmentDate, today) == 0)
+                .OrderBy(a => a.AppointmentTime)
                 .Select(a => new AppointmentDto
                 {
-                    // التحويل إلى نص يتم هنا (بعد الترتيب)
                     Time = a.AppointmentTime.ToString(@"hh\:mm"),
                     Patient = a.Patient.User.FullName,
                     Doctor = a.Doctor.FullName,
@@ -62,8 +65,8 @@ public class DashboardService : IDashboardService
                 })
                 .ToListAsync();
 
-            // الفواتير للمتابعة (لا يوجد بها خطأ ترجمة)
             summary.InvoicesToFollowUp = await _context.Invoices
+                .AsNoTracking()
                 .Include(i => i.Patient).ThenInclude(p => p.User)
                 .Where(i => i.Status == InvoiceStatus.Due || i.Status == InvoiceStatus.Partial)
                 .OrderBy(i => i.DueDate)
@@ -75,21 +78,16 @@ public class DashboardService : IDashboardService
                 })
                 .ToListAsync();
 
-
             return Result<DashboardSummaryDto>.Success(summary);
         }
- 
         catch (Exception ex)
         {
-            var specificError = new Error(
-                code: DashboardErrors.FetchFailed.Code,
-                message: $"{DashboardErrors.FetchFailed.Message} Details: {ex.Message}",
-                statusCode: DashboardErrors.FetchFailed.StatusCode
-            );
-
-            return Result.Failure<DashboardSummaryDto>(specificError);
+            return Result.Failure<DashboardSummaryDto>(
+                new Error(
+                    DashboardErrors.FetchFailed.Code,
+                    $"{DashboardErrors.FetchFailed.Message} Details: {ex.Message}",
+                    DashboardErrors.FetchFailed.StatusCode
+                ));
         }
-
     }
 }
-

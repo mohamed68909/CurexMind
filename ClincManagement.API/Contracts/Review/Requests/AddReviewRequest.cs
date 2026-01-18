@@ -4,8 +4,8 @@ namespace ClincManagement.API.Contracts.Review.Requests
 {
     public record AddReviewRequest
     {
-        [Required]
-        public Guid PatientId { get; init; }
+
+        public string UserId { get; init; }
 
 
         [Range(1, 5)]

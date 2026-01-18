@@ -9,7 +9,7 @@ public sealed class Doctor : Auditable
     public int YearsOfExperience { get; set; }
     public string Languages { get; set; } = string.Empty;
     public decimal Price { get; set; }
-
+    public string bio {  get; set; } = string.Empty;
     public Guid ClinicId { get; set; }
     public string UserId { get; set; } = string.Empty;
 

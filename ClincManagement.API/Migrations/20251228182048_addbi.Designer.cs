@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClincManagement.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251205110043_c")]
-    partial class c
+    [Migration("20251228182048_addbi")]
+    partial class addbi
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -156,19 +156,19 @@ namespace ClincManagement.API.Migrations
                             Id = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
                             AccessFailedCount = 0,
                             ConcurrencyStamp = "admin-concurrency-stamp",
-                            Email = "dev@mohamed.com",
+                            Email = "Admin@mohamed.com",
                             EmailConfirmed = true,
                             FullName = "Mohamed Ashraf",
                             IsDisabled = false,
                             LockoutEnabled = false,
-                            NormalizedEmail = "DEV@MOHAMED.COM",
-                            NormalizedUserName = "DEV@MOHAMED.COM",
+                            NormalizedEmail = "ADMIN@MOHAMED.COM",
+                            NormalizedUserName = "ADMIN@MOHAMED.COM",
                             PasswordHash = "AQAAAAIAAYagAAAAEKj70KPmPc7BxyRhD9MuptCGolRkbmTp27lM/5HLVQxdU/qZw0HwYDAGR9JyB4c19Q==",
                             PhoneNumber = "01234567890",
                             PhoneNumberConfirmed = true,
                             SecurityStamp = "admin-security-stamp",
                             TwoFactorEnabled = false,
-                            UserName = "dev@mohamed.com"
+                            UserName = "Admin@mohamed.com"
                         });
                 });
 
@@ -208,6 +208,9 @@ namespace ClincManagement.API.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(30);
 
+                    b.Property<Guid?>("InvoiceId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -217,6 +220,9 @@ namespace ClincManagement.API.Migrations
 
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasMaxLength(20)
@@ -240,6 +246,8 @@ namespace ClincManagement.API.Migrations
                     b.HasIndex("ClinicId");
 
                     b.HasIndex("DoctorId");
+
+                    b.HasIndex("InvoiceId");
 
                     b.HasIndex("PatientId");
 
@@ -766,6 +774,21 @@ namespace ClincManagement.API.Migrations
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
                             Name = "Consultation"
+                        },
+                        new
+                        {
+                            Id = new Guid("55555555-5555-5555-5555-555555555555"),
+                            Name = "Installation"
+                        },
+                        new
+                        {
+                            Id = new Guid("66666666-6666-6666-6666-666666666666"),
+                            Name = "Maintenance"
+                        },
+                        new
+                        {
+                            Id = new Guid("77777777-7777-7777-7777-777777777777"),
+                            Name = "Emergency Repair"
                         });
                 });
 
@@ -870,6 +893,9 @@ namespace ClincManagement.API.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Specialization")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -887,6 +913,10 @@ namespace ClincManagement.API.Migrations
 
                     b.Property<int>("YearsOfExperience")
                         .HasColumnType("int");
+
+                    b.Property<string>("bio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -909,9 +939,11 @@ namespace ClincManagement.API.Migrations
                             FullName = "Dr. John Smith",
                             IsDeleted = false,
                             Languages = "English, Spanish",
+                            Price = 0m,
                             Specialization = "Cardiology",
                             UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
-                            YearsOfExperience = 12
+                            YearsOfExperience = 12,
+                            bio = ""
                         });
                 });
 
@@ -1124,6 +1156,10 @@ namespace ClincManagement.API.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("ClincManagement.API.Entities.Invoice", "Invoice")
+                        .WithMany()
+                        .HasForeignKey("InvoiceId");
+
                     b.HasOne("ClincManagement.API.Entities.Patient", "Patient")
                         .WithMany("Appointments")
                         .HasForeignKey("PatientId")
@@ -1137,6 +1173,8 @@ namespace ClincManagement.API.Migrations
                     b.Navigation("Clinic");
 
                     b.Navigation("Doctor");
+
+                    b.Navigation("Invoice");
 
                     b.Navigation("Patient");
 

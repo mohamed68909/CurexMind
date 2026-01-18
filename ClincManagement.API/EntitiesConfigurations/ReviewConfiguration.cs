@@ -1,4 +1,6 @@
-﻿namespace ClincManagement.API.EntitiesConfigurations
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace ClincManagement.API.EntitiesConfigurations
 {
     public class ReviewConfiguration : IEntityTypeConfiguration<Review>
     {
@@ -21,10 +23,12 @@
                    .HasForeignKey(r => r.DoctorId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(r => r.Patient)
-                   .WithMany(p => p.Reviews)
-                   .HasForeignKey(r => r.PatientId)
-                   .OnDelete(DeleteBehavior.Restrict);
+            builder
+        .HasOne(r => r.User)
+        .WithMany()
+        .HasForeignKey(r => r.UserId)
+        .OnDelete(DeleteBehavior.Restrict);
+
 
             builder.HasOne(r => r.Clinic)
                    .WithMany(c => c.Reviews)
@@ -39,7 +43,7 @@
                     Comment = "Excellent service!",
                     CreatedAt = new DateTime(2025, 09, 15),
                     ClinicId = Guid.Parse("33333333-3333-3333-3333-333333333333"),
-                    PatientId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    UserId = "f70250f2-ece4-44da-a1a8-ffad173d3dde",
                     DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222")
                 }
             );

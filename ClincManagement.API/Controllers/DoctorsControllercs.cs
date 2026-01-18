@@ -81,22 +81,29 @@ namespace ClincManagement.API.Controllers
         }
 
      
-        [HttpPost("{doctorId:guid}/reviews")]
-  
-        [ProducesResponseType(typeof(AddReviewResponse), StatusCodes.Status201Created)]
+       
+
+     
+        [HttpPost("{doctorId}/reviews")]
         public async Task<IActionResult> AddReview(
-            Guid doctorId,
-            [FromBody] AddReviewRequest request,
-            CancellationToken cancellationToken)
+    Guid doctorId,
+    [FromBody] AddReviewRequest request,
+    CancellationToken cancellationToken)
         {
-            var userId = "ff0a1ace-c169-4a19-9052-354d44d90b37";
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+           
 
-            var result = await _doctorService.AddReview(doctorId, userId, request, cancellationToken);
+            var result = await _doctorService.AddReview(
+                doctorId,
+                userId,
+                request,
+                cancellationToken);
 
             return result.IsSuccess
                 ? CreatedAtAction(nameof(GetById), new { id = doctorId }, result.Value)
                 : result.ToProblem();
         }
+
     }
 }

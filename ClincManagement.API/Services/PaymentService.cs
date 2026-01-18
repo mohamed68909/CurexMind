@@ -20,11 +20,13 @@ namespace ClincManagement.API.Services
         }
 
         // =========================
-        // Get all payments
+        // Get all payments (ADMIN)
         // =========================
-        public async Task<Result<IEnumerable<PaymentResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<Result<IEnumerable<PaymentResponse>>> GetAllAsync(
+            CancellationToken cancellationToken = default)
         {
             var payments = await _context.Payments
+                .Include(p => p.Appointment)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
@@ -32,7 +34,7 @@ namespace ClincManagement.API.Services
         }
 
         // =========================
-        // Create payment for appointment
+        // Create payment
         // =========================
         public async Task<Result<PaymentResponse>> CreateAsync(
             string userId,
@@ -40,36 +42,44 @@ namespace ClincManagement.API.Services
             CreatePaymentRequest request,
             CancellationToken cancellationToken = default)
         {
-            // التحقق من وجود الحجز للمستخدم
             var appointment = await _context.Appointments
                 .Include(a => a.Patient)
-                .FirstOrDefaultAsync(a => a.Id == appointmentId , cancellationToken);
+                .FirstOrDefaultAsync(a => a.Id == appointmentId, cancellationToken);
 
             if (appointment is null)
                 return Result.Failure<PaymentResponse>(PaymentErrors.NotFound);
 
-            // إنشاء سجل الدفع
+           
+            var alreadyPaid = await _context.Payments
+                .AnyAsync(p => p.AppointmentId == appointmentId && p.Status == PaymentStatus.Success, cancellationToken);
+
+            if (alreadyPaid)
+                return Result.Failure<PaymentResponse>(PaymentErrors.AlreadyProcessed);
+
             var payment = new Payment
             {
                 AppointmentId = appointment.Id,
                 PatientId = appointment.PatientId,
-                InvoiceId = null, // لا توجد فاتورة مسبقة
+                InvoiceId = null,
                 Amount = request.Amount,
                 Method = request.Method,
-                Status = PaymentStatus.Success,  // الدفع تم بنجاح يدويًا
+                Status = request.Method == PaymentMethod.Wallet ? PaymentStatus.Success : PaymentStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
-                ConfirmedAt = DateTime.UtcNow
+                ConfirmedAt = request.Method == PaymentMethod.Wallet ? DateTime.UtcNow : null
             };
 
-            // تحديث حالة الحجز بعد الدفع
-            appointment.Status = AppointmentStatus.Confirmed;
+         
+            appointment.PaymentStatus = payment.Status;
+            appointment.Status = payment.Status == PaymentStatus.Success
+                ? AppointmentStatus.Confirmed
+                : AppointmentStatus.Waiting;
 
             _context.Payments.Add(payment);
             await _context.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
-                "Payment created manually for appointment {AppointmentId} by user {UserId}",
-                appointmentId, userId);
+                "Payment created: AppointmentId={AppointmentId}, UserId={UserId}, Amount={Amount}, Method={Method}, Status={Status}",
+                appointmentId, userId, payment.Amount, payment.Method, payment.Status);
 
             return Result.Success(MapToPaymentResponse(payment));
         }
@@ -84,6 +94,7 @@ namespace ClincManagement.API.Services
         {
             var payment = await _context.Payments
                 .Include(p => p.Patient)
+                .Include(p => p.Appointment)
                 .FirstOrDefaultAsync(p => p.Id == paymentId && p.Patient.UserId == userId, cancellationToken);
 
             if (payment is null)
@@ -102,23 +113,31 @@ namespace ClincManagement.API.Services
         {
             var payment = await _context.Payments
                 .Include(p => p.Patient)
+                .Include(p => p.Appointment)
                 .FirstOrDefaultAsync(p => p.Id == paymentId && p.Patient.UserId == userId, cancellationToken);
 
             if (payment is null)
                 return Result.Failure<PaymentResponse>(PaymentErrors.NotFound);
 
             if (payment.Status == PaymentStatus.Success)
-                return Result.Failure<PaymentResponse>(PaymentErrors.IsPaid);
+                return Result.Failure<PaymentResponse>(PaymentErrors.AlreadyPaid);
 
-            if (payment.Status == PaymentStatus.Failed)
-                return Result.Failure<PaymentResponse>(PaymentErrors.Cancelled);
+            if (payment.Status == PaymentStatus.Cancelled)
+                return Result.Failure<PaymentResponse>(PaymentErrors.AlreadyCancelled);
 
-            payment.Status = PaymentStatus.Failed;
+            payment.Status = PaymentStatus.Cancelled;
+
+            if (payment.Appointment != null)
+            {
+                payment.Appointment.PaymentStatus = PaymentStatus.Cancelled;
+                payment.Appointment.Status = AppointmentStatus.Waiting;
+            }
+
             await _context.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
-                "Payment {PaymentId} cancelled by user {UserId}",
-                paymentId, userId);
+                "Payment cancelled: PaymentId={PaymentId}, UserId={UserId}, Amount={Amount}, Method={Method}",
+                paymentId, userId, payment.Amount, payment.Method);
 
             return Result.Success(MapToPaymentResponse(payment));
         }
@@ -126,8 +145,9 @@ namespace ClincManagement.API.Services
         // =========================
         // Mapper
         // =========================
-        private static PaymentResponse MapToPaymentResponse(Payment payment) =>
-            new PaymentResponse
+        private static PaymentResponse MapToPaymentResponse(Payment payment)
+        {
+            return new PaymentResponse
             {
                 Id = payment.Id,
                 AppointmentId = payment.AppointmentId,
@@ -138,5 +158,6 @@ namespace ClincManagement.API.Services
                 CreatedAt = payment.CreatedAt,
                 ConfirmedAt = payment.ConfirmedAt
             };
+        }
     }
 }

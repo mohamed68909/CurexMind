@@ -1,32 +1,31 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace ClincManagement.API.Migrations
 {
     /// <inheritdoc />
-    public partial class i : Migration
+    public partial class updateas : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<Guid>(
-                name: "InvoiceId",
+            migrationBuilder.AddColumn<string>(
+                name: "userId",
                 table: "Appointments",
-                type: "uniqueidentifier",
+                type: "nvarchar(450)",
                 nullable: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Appointments_InvoiceId",
+                name: "IX_Appointments_userId",
                 table: "Appointments",
-                column: "InvoiceId");
+                column: "userId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Appointments_Invoices_InvoiceId",
+                name: "FK_Appointments_AspNetUsers_userId",
                 table: "Appointments",
-                column: "InvoiceId",
-                principalTable: "Invoices",
+                column: "userId",
+                principalTable: "AspNetUsers",
                 principalColumn: "Id");
         }
 
@@ -34,15 +33,15 @@ namespace ClincManagement.API.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Appointments_Invoices_InvoiceId",
+                name: "FK_Appointments_AspNetUsers_userId",
                 table: "Appointments");
 
             migrationBuilder.DropIndex(
-                name: "IX_Appointments_InvoiceId",
+                name: "IX_Appointments_userId",
                 table: "Appointments");
 
             migrationBuilder.DropColumn(
-                name: "InvoiceId",
+                name: "userId",
                 table: "Appointments");
         }
     }
