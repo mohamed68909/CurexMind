@@ -9,7 +9,7 @@ namespace ClincManagement.API.Services.Interface
     {
 
         Task<Result<AuthResponse>> SignInAsync(SignInEmailRequest request, CancellationToken cancellationToken);
-        Task<Result<AuthResponse>> SignInGoogleAsync(GoogleSignInRequest request);
+   
         Task<Result<AuthResponse>> SignUpAsync(SignUpRequest request, CancellationToken cancellationToken);
         Task<Result> RevokeAsync(LogOutRequest request);
         Task<Result<AuthResponse>> GenerateRefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default);

@@ -72,54 +72,7 @@ public class AuthService(
            ? Result.Failure<AuthResponse>(UserErrors.UserLockedOut)
            : Result.Failure<AuthResponse>(UserErrors.InvalidCredentials with { StatusCode = StatusCodes.Status400BadRequest });
     }
-    public async Task<Result<AuthResponse>> SignInGoogleAsync(GoogleSignInRequest request)
-    {
-        if (await GoogleJsonWebSignature.ValidateAsync(request.TokenID) is not { } payload)
-            return Result.Failure<AuthResponse>(UserErrors.InvalidGoogleToken);
 
-        var user = await _userManager.FindByEmailAsync(payload.Email);
-
-        if (user is null)
-        {
-            user = new ApplicationUser
-            {
-                UserName = _userHelpers.GetUserName(payload.Email),
-                Email = payload.Email,
-                FullName = payload.Name,
-                EmailConfirmed = true
-            };
-
-            var result = await _userManager.CreateAsync(user);
-            if (!result.Succeeded)
-                return Result.Failure<AuthResponse>(UserErrors.UserCreationFailed);
-
-            await _userManager.AddToRoleAsync(user, DefaultRoles.Patient.Name);
-
-            var loginInfo = new UserLoginInfo(Providers.Google, payload.Subject, Providers.Google);
-            var addLoginResult = await _userManager.AddLoginAsync(user, loginInfo);
-            if (!addLoginResult.Succeeded)
-                return Result.Failure<AuthResponse>(UserErrors.ExternalLoginFailed);
-        }
-        else
-        {
-            if (user.IsDisabled)
-                return Result.Failure<AuthResponse>(UserErrors.UserDisabled);
-
-            if (await _userManager.IsLockedOutAsync(user))
-                return Result.Failure<AuthResponse>(UserErrors.UserLockedOut);
-
-            var logins = await _userManager.GetLoginsAsync(user);
-            if (!logins.Any(x => x.LoginProvider == Providers.Google))
-            {
-                var loginInfo = new UserLoginInfo(Providers.Google, payload.Subject, Providers.Google);
-                var addLoginResult = await _userManager.AddLoginAsync(user, loginInfo);
-                if (!addLoginResult.Succeeded)
-                    return Result.Failure<AuthResponse>(UserErrors.ExternalLoginFailed);
-            }
-        }
-
-        return Result.Success(await GetAuthResponse(user));
-    }
 
     public async Task<Result> RevokeAsync(LogOutRequest request)
     {

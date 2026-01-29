@@ -31,17 +31,7 @@ namespace ClincManagement.API.Controllers
             var result = await _authServices.SignInAsync(request, cancellationToken);
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
-        [HttpPost("sign-in/google")]
-        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status423Locked)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-        public async Task<IActionResult> SignInGoogle([FromBody] GoogleSignInRequest request)
-        {
-            var result = await _authServices.SignInGoogleAsync(request);
-            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
-        }
+     
 
         [HttpPost("revoke-refresh-token")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
