@@ -1,219 +1,225 @@
 
-# 🏥 Clinic Management API
 
-**Clinic Management API** is a RESTful Web API built with **ASP.NET Core** and **Entity Framework Core** designed to manage medical clinics efficiently — including appointments, patients, doctors, invoices, payments, and services.
+# 🏥 Clinic Management System API
 
----
+A production-ready **RESTful Web API** built using **ASP.NET Core (.NET 9)** and **Entity Framework Core** to manage clinic operations securely and efficiently.
 
-## 🚀 Key Features
-
-- 🧑‍⚕️ Manage doctors, patients, and appointments.  
-- 💰 Create and track invoices and payments.  
-- 🧾 Manage different service types and pricing.  
-- 🔐 Secure authentication using **ASP.NET Identity** and **JWT Tokens**.  
-- 🧭 Built-in API documentation via **Swagger UI**.  
-- ⚙️ Clean layered architecture (Controllers / Services / Data / Entities / DTOs).  
-- 🔄 Pagination support for large data sets.  
-- 🧩 Uses **Mapster** for fast object mapping between entities and DTOs.
+This system provides a complete backend solution for managing patients, doctors, appointments, invoices, payments, and hospital stays — with strong security and clean architecture principles.
 
 ---
 
-## 🏗️ Project Structure
+## 🚀 Core Features
+
+### 🏥 Clinic Management
+
+* Manage doctors, patients, and hospital stays
+* Full appointment management (CRUD)
+* ⭐ Doctor reviews and ratings
+* 🔎 Pagination & filtering support
+
+### 📅 Online Appointment Booking (Patient Feature)
+
+* Patients can book appointments online
+* JWT-protected booking endpoint
+* Ownership-based access validation
+* Patients can only access their own appointments
+
+### 💰 Financial System
+
+* Invoice creation and management
+* Secure payment processing
+* PDF invoice export
+* Ownership-based invoice protection
+
+### 🔐 Authentication & Authorization
+
+* JWT Authentication
+* ASP.NET Identity integration
+* Role-Based Authorization (Admin / Patient)
+* Resource-Level Ownership validation
+* Secure Swagger integration (JWT enabled)
+
+---
+
+## 🏗️ Architecture & Design
+
+This project follows a clean layered architecture:
 
 ```
+Controllers → Services → Data → Entities
+```
 
-ClincManagement.API/
-├── Controllers/              # REST API endpoints
-├── Services/
-│   ├── Interface/            # Service interfaces
-│   └── Implementation/       # Business logic implementations
-├── Entities/                 # Database entities
-├── EntitiesConfigurations/   # EF Core Fluent API configurations
-├── Data/                     # ApplicationDbContext
-├── Contracts/                # DTOs for requests/responses
-├── Errors/                   # Error handling and result wrappers
-├── Program.cs                # Application entry point
-├── appsettings.json          # Configuration and connection strings
-└── README.md                 # Project documentation
+### Key Design Patterns Used
 
-````
+* Service Layer Pattern
+* DTOs (Data Transfer Objects)
+* Result<T> wrapper for consistent API responses
+* Fluent API for entity configuration
+* Centralized authorization helper
+* Dependency Injection
 
 ---
 
 ## 🧰 Technologies Used
 
-| Category | Technology |
-|-----------|-------------|
-| Language | C# (.NET 7 / .NET 8) |
-| Framework | ASP.NET Core Web API |
-| ORM | Entity Framework Core |
-| Database | SQL Server |
-| Authentication | ASP.NET Identity + JWT |
-| Object Mapping | Mapster |
-| Documentation | Swagger / Swashbuckle |
-| Dependency Injection | Built-in DI |
-| Design Patterns | Service Layer, DTOs, Result Wrapper |
+| Category       | Technology                 |
+| -------------- | -------------------------- |
+| Language       | C# (.NET 9)                |
+| Framework      | ASP.NET Core Web API       |
+| ORM            | Entity Framework Core      |
+| Database       | SQL Server                 |
+| Authentication | ASP.NET Identity + JWT     |
+| Authorization  | Role-Based + Ownership     |
+| Object Mapping | Mapster                    |
+| Documentation  | Swagger                    |
+| Architecture   | Clean Layered Architecture |
 
 ---
 
-## ⚙️ How to Run Locally
+## 🔒 Authentication Flow
 
-### 1️⃣ Prerequisites
-
-- .NET SDK 7.0 or later  
-- SQL Server (local or remote)  
-- Visual Studio or Visual Studio Code  
-- EF Core CLI tools installed  
-
----
-
-### 2️⃣ Steps to Run
-
-
-# Clone the repository
-git clone https://github.com/mohamed68909/ClincManagement.git
-
-# Navigate to the API project
-cd ClincManagement/ClincManagement.API
-
-# Apply database migrations
-dotnet ef database update
-
-# Run the project
-dotnet run
-
-
-Then open your browser at:
+1️⃣ Register or log in:
 
 ```
-https://localhost:{port}/swagger
+POST /api/Auth/sign-up
+POST /api/Auth/sign-in
 ```
 
-to explore and test all API endpoints.
+2️⃣ Receive a JWT token in the response.
+
+3️⃣ Use the token in secured endpoints:
+
+```
+Authorization: Bearer {your_token}
+```
+
+4️⃣ Access control supports:
+
+* Role-based restrictions (Admin / Patient)
+* Ownership validation (users can only access their own resources)
 
 ---
 
-## 🧠 Design Overview
+## 📅 Online Booking Flow (Patient)
 
-* **Fluent API Configurations** are defined in `EntitiesConfigurations` to set field lengths, keys, and relationships.
-* **Service Layer** handles business logic and communicates with the database via `ApplicationDbContext`.
-* **DTOs (Data Transfer Objects)** ensure data isolation between API models and database entities.
-* **Result<T>** is used for consistent success/error handling across all responses.
-* **Pagination** is implemented for endpoints like appointments and invoices.
-* **Swagger UI** is pre-configured for easy API documentation and testing.
+Patients can book appointments directly via the API.
+
+### Booking Process:
+
+1. Patient logs in and receives JWT.
+2. Patient calls the booking endpoint:
+
+```
+POST /api/appointments/patient/{patientId}/book
+```
+
+3. System validates:
+
+   * User is authenticated
+   * User role is Patient
+   * The patientId belongs to the logged-in user
+4. Appointment is created securely.
 
 ---
 
 ## 📦 Example Endpoints
 
-| Method   | Endpoint                               | Description                        |
-| -------- | -------------------------------------- | ---------------------------------- |
-| `GET`    | `/api/appointments?page=1&pageSize=10` | Get paginated list of appointments |
-| `POST`   | `/api/appointments`                    | Create a new appointment           |
-| `PUT`    | `/api/appointments/{id}`               | Update an appointment              |
-| `DELETE` | `/api/appointments/{id}`               | Delete an appointment              |
-| `GET`    | `/api/invoices`                        | Retrieve all invoices              |
-| `POST`   | `/api/serviceTypes`                    | Add a new service type             |
+| Method | Endpoint                                     | Description                |
+| ------ | -------------------------------------------- | -------------------------- |
+| GET    | `/api/appointments?page=1&pageSize=10`       | Get paginated appointments |
+| POST   | `/api/appointments`                          | Create appointment (Admin) |
+| POST   | `/api/appointments/patient/{patientId}/book` | Patient books appointment  |
+| GET    | `/api/patients/{id}`                         | Get patient details        |
+| GET    | `/api/invoices/{id}/pdf`                     | Export invoice as PDF      |
+| POST   | `/api/payments/{appointmentId}`              | Create payment             |
+| GET    | `/api/doctors`                               | List doctors               |
 
 ---
 
-## 🔒 Authentication
+## ⚙️ How to Run Locally
 
-The API uses **JWT (JSON Web Tokens)** combined with **ASP.NET Identity** for secure authentication and authorization.
+### Prerequisites
 
-1. Register or log in through `/api/auth/register` or `/api/auth/login`.
-2. Receive a JWT token in the response.
-3. Use the token in all subsequent requests by adding this header:
+* .NET 9 SDK
+* SQL Server
+* EF Core CLI tools
+
+### Steps
+
+```bash
+git clone https://github.com/mohamed68909/ClincManagement.git
+cd ClincManagement/ClincManagement.API
+dotnet ef database update
+dotnet run
+```
+
+Open in browser:
 
 ```
-Authorization: Bearer {your_token_here}
-```
-
----
-
-## 🧩 Example Code Snippet
-
-```csharp
-public class AppointmentService : IAppointmentService
-{
-    private readonly ApplicationDbContext _context;
-
-    public AppointmentService(ApplicationDbContext context)
-    {
-        _context = context;
-    }
-
-    public async Task<Result<PagedAppointmentResponse>> GetAllAppointmentsAsync(int page, int pageSize, CancellationToken cancel)
-    {
-        var query = _context.Appointments.AsNoTracking();
-        var total = await query.CountAsync(cancel);
-
-        var items = await query
-            .OrderBy(a => a.Date)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ProjectToType<AppointmentDto>() // Using Mapster
-            .ToListAsync(cancel);
-
-        return Result.Success(new PagedAppointmentResponse(total, items));
-    }
-}
+https://localhost:{port}/swagger
 ```
 
 ---
 
-## 🧾 Future Improvements
+## 📸 API Preview
 
-* 🧠 Add a frontend (React or Angular).
-* 📱 Create a mobile version using .NET MAUI or Flutter.
-* ☁️ Deploy to Azure App Service or Render.
-* 🔍 Add structured logging using Serilog.
-* 🧪 Implement unit and integration tests (xUnit + Moq).
-* 💬 Add localization (multi-language support).
+### 🔐 Swagger UI (JWT Enabled)
+
+![Swagger UI](assets/swagger-ui-home.png)
+
+### 📅 Appointments Module
+
+![Appointments](assets/swagger-ui-appointment-endpoint.png)
+
+### 👨‍⚕️ Doctors & Reviews
+
+![Doctors](assets/swagger-ui-doctors.png)
+
+### 🧾 Invoices & Payments
+
+![Invoices](assets/swagger-ui-invoices.png)
+
+### 🏥 Patients & Stays
+
+![Patients](assets/swagger-ui-patients.png)
 
 ---
 
-## 📸 Screenshots
+## 🧠 What This Project Demonstrates
 
-### Swagger UI - Home
-
-The main page lists all available controllers and authentication methods.
-
-![Swagger UI Home Page](https://raw.githubusercontent.com/mohamed68909/ClincManagement/main/assets/swagger-ui-home.png)
+* Secure backend API development
+* JWT-based authentication pipeline
+* Role-based & ownership-based authorization
+* Clean service-based architecture
+* Pagination & filtering implementation
+* Real-world backend system design
 
 ---
 
-### Endpoint Example (Appointments)
+## 🔮 Future Improvements
 
-A detailed view of the **Appointments** controller, showing the data structure and operations.
-
-![Appointments Endpoint Definition](https://raw.githubusercontent.com/mohamed68909/ClincManagement/main/assets/swagger-ui-appointment-endpoint.png)
+* Unit & Integration Testing (xUnit + Moq)
+* Structured logging with Serilog
+* CI/CD pipeline setup
+* Cloud deployment (Azure App Service)
+* Frontend integration (React or Angular)
+* Role expansion (Doctor / Receptionist)
 
 ---
 
 ## 👨‍💻 Author
 
 **Mohamed Ashraf**
-💼 Software Developer specializing in .NET and Web APIs
-🌐 [GitHub Profile](https://github.com/mohamed68909)
-📧 Contact: [[your.email@example.com](mailto:your.email@example.com)]
+.NET Backend Developer
+
+GitHub:
+[https://github.com/mohamed68909](https://github.com/mohamed68909)
 
 ---
 
-## 🪪 License
+## 📜 License
 
-This project is developed for educational and training purposes.
-Feel free to use or modify it for non-commercial projects.
-
-```
 MIT License
-Copyright (c) 2025 Mohamed Ashraf
-```
-
-```
+Developed for educational and portfolio purposes.
 
 ---
-
-هل تحب أضيف في الـREADME **قسم “Database Diagram”** فيه شكل تخطيطي للعلاقات بين الجداول (Appointments – Doctors – Patients – Invoices... إلخ)؟  
-أقدر أعمله لك كرسم واضح بصيغة PNG وتضيفه في مجلد `assets/`.
-```
