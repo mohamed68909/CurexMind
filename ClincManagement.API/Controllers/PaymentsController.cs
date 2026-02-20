@@ -1,4 +1,5 @@
-﻿using ClincManagement.API.Abstractions.Consts;
+﻿using ClincManagement.API.Abstractions;
+using ClincManagement.API.Abstractions.Consts;
 using ClincManagement.API.Contracts.Payment.Requests;
 using ClincManagement.API.Contracts.Payment.Responses;
 using ClincManagement.API.Services;
@@ -9,6 +10,7 @@ namespace ClincManagement.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = $"{DefaultRoles.Admin.Name},{DefaultRoles.Patient.Name}")]
     public class PaymentsController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
@@ -18,33 +20,27 @@ namespace ClincManagement.API.Controllers
             _paymentService = paymentService;
         }
 
-        // ----------------------------------------
-        // Get All Payments
-        // ----------------------------------------
         [HttpGet]
+        [Authorize(Roles = DefaultRoles.Admin.Name)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllPayments(CancellationToken cancellationToken)
         {
             var result = await _paymentService.GetAllAsync(cancellationToken);
-            return result.IsSuccess
-                ? Ok(result.Value)
-                : StatusCode(StatusCodes.Status500InternalServerError, result.Error);
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
-        // ----------------------------------------
-        // Create Payment (Manual / Cash / Card)
-        // ----------------------------------------
-        [HttpPost("{appointmentId}")]
+       
+        [HttpPost("{appointmentId:guid}")]
+        [Authorize(Roles = $"{DefaultRoles.Admin.Name},{DefaultRoles.Patient.Name}")]
         [ProducesResponseType(typeof(PaymentResponse), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> CreatePayment(
             [FromRoute] Guid appointmentId,
             [FromBody] CreatePaymentRequest request,
             CancellationToken cancellationToken)
         {
+            var userId = User.GetUserId();
             var result = await _paymentService.CreateAsync(
-                User.GetUserId(),
+                userId,
                 appointmentId,
                 request,
                 cancellationToken);
@@ -54,27 +50,21 @@ namespace ClincManagement.API.Controllers
                 : result.ToProblem();
         }
 
-        // ----------------------------------------
-        // Get Payment By Id
-        // ----------------------------------------
-        [HttpGet("{id}")]
-        [Authorize(Roles = DefaultRoles.Admin.Name)]
+        
+        [HttpGet("{id:guid}")]
+        [Authorize(Roles = $"{DefaultRoles.Admin.Name},{DefaultRoles.Patient.Name}")]
         [ProducesResponseType(typeof(PaymentResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetPayment([FromRoute] Guid id, CancellationToken cancellationToken)
         {
-            var result = await _paymentService.GetAsync(User.GetUserId(), id, cancellationToken);
+            var userId = User.GetUserId();
+            var result = await _paymentService.GetAsync(userId, id, cancellationToken);
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
-        // ----------------------------------------
-        // Cancel Payment
-        // ----------------------------------------
-        [HttpDelete("{id}/cancel")]
+   
+        [HttpDelete("{id:guid}/cancel")]
         [Authorize(Roles = DefaultRoles.Admin.Name)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> CancelPayment([FromRoute] Guid id, CancellationToken cancellationToken)
         {
             var result = await _paymentService.CancelPaymentAsync(id, User.GetUserId(), cancellationToken);

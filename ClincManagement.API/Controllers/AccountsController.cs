@@ -1,10 +1,13 @@
 ﻿using ClincManagement.API.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClincManagement.API.Controllers
 {
+    
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AccountsController(IAccountService accountService) : ControllerBase
     {
         private readonly IAccountService _accountService = accountService;

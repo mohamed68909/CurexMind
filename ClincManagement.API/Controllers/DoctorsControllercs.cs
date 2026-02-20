@@ -1,4 +1,5 @@
-﻿using ClincManagement.API.Contracts.Clinic.Respones;
+﻿using ClincManagement.API.Abstractions.Consts;
+using ClincManagement.API.Contracts.Clinic.Respones;
 using ClincManagement.API.Contracts.Doctors.Requests;
 using ClincManagement.API.Contracts.Doctors.Respones;
 using ClincManagement.API.Contracts.Review.Requests;
@@ -21,10 +22,9 @@ namespace ClincManagement.API.Controllers
             _doctorService = doctorService;
         }
 
-
-
-        [HttpGet("GetAll")]
-
+        
+        [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(IEnumerable<DoctorListResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
@@ -32,8 +32,9 @@ namespace ClincManagement.API.Controllers
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
-      
+        
         [HttpGet("{id:guid}")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(DoctorDetailsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
@@ -42,57 +43,58 @@ namespace ClincManagement.API.Controllers
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
-
-        [HttpPost("Add")]
+        
+        [HttpPost]
+        [Authorize(Roles = DefaultRoles.Admin.Name)]
         [ProducesResponseType(typeof(DoctorDetailsResponse), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateDoctor(
             [FromForm] CreateDoctorRequest request,
-           
             CancellationToken cancellationToken)
         {
-            var result = await _doctorService.CreateAsync(request,  cancellationToken);
+            var result = await _doctorService.CreateAsync(request, cancellationToken);
 
             return result.IsSuccess
-                ? CreatedAtAction(nameof(GetById),
-                    new { id = result.Value.Id }, result.Value)
+                ? CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, result.Value)
                 : result.ToProblem();
         }
 
+        
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = DefaultRoles.Admin.Name)]
         [ProducesResponseType(typeof(DoctorDetailsResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateDoctor(
             Guid id,
             [FromForm] UpdateDoctorRequest request,
-         
             CancellationToken cancellationToken)
         {
             var result = await _doctorService.UpdateAsync(id, request, cancellationToken);
-
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
-     
+        
         [HttpDelete("{id:guid}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(Roles = DefaultRoles.Admin.Name)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteDoctor(Guid id, CancellationToken cancellationToken)
         {
             var result = await _doctorService.DeleteAsync(id, cancellationToken);
-            return result.IsSuccess ? Ok("Delete is doctor") : result.ToProblem();
+            return result.IsSuccess ? NoContent() : result.ToProblem();
         }
 
-     
-       
-
-     
-        [HttpPost("{doctorId}/reviews")]
+      
+        [HttpPost("{doctorId:guid}/reviews")]
+        [Authorize(Roles = DefaultRoles.Patient.Name)]
+        [ProducesResponseType(typeof(ReviewResponse), StatusCodes.Status201Created)]
         public async Task<IActionResult> AddReview(
-    Guid doctorId,
-    [FromBody] AddReviewRequest request,
-    CancellationToken cancellationToken)
+            Guid doctorId,
+            [FromBody] AddReviewRequest request,
+            CancellationToken cancellationToken)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-           
+            
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized();
 
             var result = await _doctorService.AddReview(
                 doctorId,
@@ -104,6 +106,5 @@ namespace ClincManagement.API.Controllers
                 ? CreatedAtAction(nameof(GetById), new { id = doctorId }, result.Value)
                 : result.ToProblem();
         }
-
     }
 }

@@ -12,7 +12,7 @@ namespace ClincManagement.API.EntitiesConfigurations
                 .IsRequired()
                 .HasMaxLength(100);
 
-            // اجعل الـ ProfileImage اختياري
+            
             builder.OwnsOne(u => u.ProfileImage, img =>
             {
                 img.ToTable("UserProfileImages");
@@ -22,7 +22,7 @@ namespace ClincManagement.API.EntitiesConfigurations
                 img.Property(x => x.FileExtension).HasMaxLength(10);
                 img.Property(x => x.ContentType).HasMaxLength(50);
 
-                // Seed منفصل للـ Owned Entity
+               
                 img.HasData(new
                 {
                     UserId = DefaultUsers.Admin.Id,
@@ -33,7 +33,7 @@ namespace ClincManagement.API.EntitiesConfigurations
                 });
             });
 
-            // Seed للمستخدم بدون navigation للـ ProfileImage
+           
             builder.HasData(new ApplicationUser
             {
                 Id = DefaultUsers.Admin.Id,

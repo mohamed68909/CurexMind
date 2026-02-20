@@ -13,28 +13,40 @@ namespace CurexMind.API.Services
     {
         private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
-        public (string token, int expiresIn) GenerateToken(ApplicationUser user, IEnumerable<string> roles, string? doctorId = null, IEnumerable<int>? clinicAccess = null, IEnumerable<string>? permissions = null)
+        public (string token, int expiresIn) GenerateToken(
+            ApplicationUser user,
+            IEnumerable<string> roles,
+            string? doctorId = null,
+            IEnumerable<int>? clinicAccess = null,
+            IEnumerable<string>? permissions = null)
         {
             var claims = new List<Claim>
             {
+              
                 new(JwtRegisteredClaimNames.Sub, user.Id),
-                new(JwtRegisteredClaimNames.Email, user.Email!),
+                new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                //new("fullName", user.FullName)
+
+               
+                new(ClaimTypes.NameIdentifier, user.Id),
+                new(ClaimTypes.Email, user.Email ?? string.Empty),
             };
 
-            // Roles
+           
+            foreach (var role in roles)
+                claims.Add(new Claim(ClaimTypes.Role, role));
+
             claims.Add(new Claim("roles", JsonSerializer.Serialize(roles), JsonClaimValueTypes.JsonArray));
 
-            // DoctorId Claim
-            if (!string.IsNullOrEmpty(doctorId))
+            
+            if (!string.IsNullOrWhiteSpace(doctorId))
                 claims.Add(new Claim("doctorId", doctorId));
 
-            // ClinicAccess Claim
+            
             if (clinicAccess != null && clinicAccess.Any())
                 claims.Add(new Claim("clinicAccess", JsonSerializer.Serialize(clinicAccess), JsonClaimValueTypes.JsonArray));
 
-            // Permissions Claim
+           
             if (permissions != null && permissions.Any())
                 claims.Add(new Claim("permissions", JsonSerializer.Serialize(permissions), JsonClaimValueTypes.JsonArray));
 
@@ -70,11 +82,22 @@ namespace CurexMind.API.Services
                     ValidIssuer = _jwtOptions.Issuer,
                     ValidateAudience = true,
                     ValidAudience = _jwtOptions.Audience,
+                    ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
 
-                return ((JwtSecurityToken)validatedToken)
-                    .Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+              
+                return ((ClaimsPrincipal)handler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = key,
+                    ValidateIssuer = true,
+                    ValidIssuer = _jwtOptions.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = _jwtOptions.Audience,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                }, out _)).FindFirstValue(ClaimTypes.NameIdentifier);
             }
             catch
             {

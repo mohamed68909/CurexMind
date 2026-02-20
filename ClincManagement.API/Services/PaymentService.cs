@@ -19,9 +19,7 @@ namespace ClincManagement.API.Services
             _logger = logger;
         }
 
-        // =========================
-        // Get all payments (ADMIN)
-        // =========================
+      
         public async Task<Result<IEnumerable<PaymentResponse>>> GetAllAsync(
             CancellationToken cancellationToken = default)
         {
@@ -33,9 +31,7 @@ namespace ClincManagement.API.Services
             return Result.Success(payments.Select(MapToPaymentResponse));
         }
 
-        // =========================
-        // Create payment
-        // =========================
+      
         public async Task<Result<PaymentResponse>> CreateAsync(
             string userId,
             Guid appointmentId,
@@ -84,9 +80,6 @@ namespace ClincManagement.API.Services
             return Result.Success(MapToPaymentResponse(payment));
         }
 
-        // =========================
-        // Get payment by id
-        // =========================
         public async Task<Result<PaymentResponse>> GetAsync(
             string userId,
             Guid paymentId,
@@ -103,9 +96,6 @@ namespace ClincManagement.API.Services
             return Result.Success(MapToPaymentResponse(payment));
         }
 
-        // =========================
-        // Cancel payment
-        // =========================
         public async Task<Result<PaymentResponse>> CancelPaymentAsync(
             Guid paymentId,
             string userId,
@@ -142,9 +132,6 @@ namespace ClincManagement.API.Services
             return Result.Success(MapToPaymentResponse(payment));
         }
 
-        // =========================
-        // Mapper
-        // =========================
         private static PaymentResponse MapToPaymentResponse(Payment payment)
         {
             return new PaymentResponse

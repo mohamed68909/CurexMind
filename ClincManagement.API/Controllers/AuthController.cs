@@ -2,6 +2,7 @@
 using ClincManagement.API.Contracts.Authentications.Respones;
 using ClincManagement.API.Services.Interface;
 using Google.Apis.Auth.OAuth2.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClincManagement.API.Controllers
@@ -12,6 +13,7 @@ namespace ClincManagement.API.Controllers
     {
         private readonly IAuthService _authServices = authServices;
         [HttpPost("sign-up")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -21,7 +23,7 @@ namespace ClincManagement.API.Controllers
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
         [HttpPost("sign-in")]
-
+        [AllowAnonymous]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
@@ -31,8 +33,8 @@ namespace ClincManagement.API.Controllers
             var result = await _authServices.SignInAsync(request, cancellationToken);
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
-     
 
+        [AllowAnonymous]
         [HttpPost("revoke-refresh-token")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -43,7 +45,7 @@ namespace ClincManagement.API.Controllers
             var result = await _authServices.RevokeAsync(request);
             return result.IsSuccess ? NoContent() : result.ToProblem();
         }
-
+        [AllowAnonymous]
         [HttpPost("refresh-token")]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]

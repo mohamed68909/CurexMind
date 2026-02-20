@@ -5,7 +5,7 @@
         public partial class ImageSettings
         {
             public const int MaxSizeInMB = 15;
-            public const int MaxSizeInBytes = MaxSizeInMB * 1024 * 1024; // بالبايت
+            public const int MaxSizeInBytes = MaxSizeInMB * 1024 * 1024; //Byetes 
             public static readonly string[] AllowedSignatures = new string[]
             {
                 "89-50",   // PNG
