@@ -4,6 +4,7 @@ using ClincManagement.API.Services.Interface;
 using Google.Apis.Auth.OAuth2.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ClincManagement.API.Controllers
 {
@@ -14,6 +15,7 @@ namespace ClincManagement.API.Controllers
         private readonly IAuthService _authServices = authServices;
         [HttpPost("sign-up")]
         [AllowAnonymous]
+        [EnableRateLimiting("AuthLimiter")]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -24,6 +26,7 @@ namespace ClincManagement.API.Controllers
         }
         [HttpPost("sign-in")]
         [AllowAnonymous]
+        [EnableRateLimiting("AuthLimiter")]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
@@ -47,6 +50,7 @@ namespace ClincManagement.API.Controllers
         }
         [AllowAnonymous]
         [HttpPost("refresh-token")]
+        [EnableRateLimiting("AuthLimiter")]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]

@@ -1,4 +1,6 @@
 using ClincManagement.API;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 namespace ClincManagement.API
 {
@@ -25,7 +27,24 @@ namespace ClincManagement.API
                         .AllowAnyMethod();
                 });
             });
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
+                options.AddPolicy("AuthLimiter", httpContext =>
+                {
+                    var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: ip,
+                        factory: _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 5,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueLimit = 0
+                        });
+                });
+            });
             var app = builder.Build();
 
             
@@ -40,7 +59,16 @@ namespace ClincManagement.API
             
             app.UseCors("AllowFrontend");
 
-         
+         app.UseRateLimiter();
+            app.Use(async (context, next) =>
+            {
+                await next();
+
+                if (context.Response.StatusCode == StatusCodes.Status429TooManyRequests)
+                {
+                    await context.Response.WriteAsync("Too many login attempts. Please try again later.");
+                }
+            });
             app.UseAuthentication();
             app.UseAuthorization();
 
