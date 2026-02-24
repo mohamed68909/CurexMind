@@ -15,7 +15,7 @@ namespace ClincManagement.API.Controllers
         private readonly IAuthService _authServices = authServices;
         [HttpPost("sign-up")]
         [AllowAnonymous]
-        [EnableRateLimiting("AuthLimiter")]
+      
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
