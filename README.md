@@ -147,8 +147,8 @@ POST /api/appointments/patient/{patientId}/book
 ### Steps
 
 ```bash
-git clone https://github.com/mohamed68909/ClincManagement.git
-cd ClincManagement/ClincManagement.API
+git clone https://github.com/mohamed68909/ClinicManagement.git
+cd ClinicManagement/ClinicManagement.API
 dotnet ef database update
 dotnet run
 ```

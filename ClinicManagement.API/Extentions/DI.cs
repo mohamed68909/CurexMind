@@ -1,0 +1,161 @@
+using ClinicManagement.API.Abstractions;
+using ClinicManagement.API.Helpers;
+using FluentValidation;
+
+using ClinicManagement.API.Services;
+using ClinicManagement.API.Services.Interface;
+using ClinicManagement.API.Services.Interfaces;
+using ClinicManagement.API.Settings;
+using ClinicManagement.API.Services;
+
+using ClinicManagement.API.Services;
+using ClinicManagement.API.Services.Interface;
+using Mapster;
+using MapsterMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+using System.Text;
+
+namespace ClinicManagement.API.Extentions
+{
+    public static class DI
+    {
+        public static IServiceCollection AddDependansiesServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddConnectionConfig(configuration);
+            services.AddControllerConfig();
+            services.AddMapsterConfig();
+            services.AddRegistrationConfig();
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+ 
+            services.AddEndpointsApiExplorer();
+
+
+            services.AddSwaggerGen(options =>
+            {
+                options.CustomSchemaIds(type => type.FullName);
+
+                // ✅ JWT Bearer in Swagger
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter JWT token like: Bearer {your token}"
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+            });
+
+            services.AddAuthenticationConfig(configuration);
+
+            return services;
+        }
+
+        private static IServiceCollection AddConnectionConfig(this IServiceCollection services, IConfiguration configuration)
+        {
+            var connectionString = configuration.GetConnectionString("DefaultConnection") ??
+                  throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(connectionString, sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 10,
+                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        errorNumbersToAdd: null);
+                }));
+
+            services.AddIdentity<ApplicationUser, ApplicationRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
+            return services;
+        }
+
+        private static IServiceCollection AddControllerConfig(this IServiceCollection services)
+        {
+            services.AddControllers();
+            services.AddHttpContextAccessor();
+            return services;
+        }
+
+        private static IServiceCollection AddMapsterConfig(this IServiceCollection services)
+        {
+            var mapsterConfig = TypeAdapterConfig.GlobalSettings;
+            mapsterConfig.Scan(Assembly.GetExecutingAssembly());
+            services.AddSingleton<IMapper>(new Mapper(mapsterConfig));
+            return services;
+        }
+
+        private static IServiceCollection AddAuthenticationConfig(this IServiceCollection services, IConfiguration configuration)
+        {
+            services
+               .AddOptions<JwtOptions>()
+               .BindConfiguration(JwtOptions.SectionName)
+               .ValidateDataAnnotations()
+               .ValidateOnStart();
+
+            var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ??
+                throw new InvalidOperationException($"Configuration section '{JwtOptions.SectionName}' not found or invalid.");
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwtOptions.Audience,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key))
+                };
+            });
+
+            return services;
+        }
+
+        private static IServiceCollection AddRegistrationConfig(this IServiceCollection services)
+        {
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IPatientService, PatientService>();
+            services.AddScoped<IDoctorService, DoctorService>();
+            services.AddScoped<IJwtProvider, JwtProvider>();
+            services.AddScoped<IAppointmentService, AppointmentService>();
+            services.AddScoped<IUserHelpers, UserHelpers>();
+            services.AddScoped<IStayService, StayService>();
+            services.AddScoped<IInvoiceService, InvoiceService>();
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IImageFileService, ImageFileService>();
+            services.AddScoped<IDashboardService, DashboardService>();
+        
+
+            return services;
+        }
+    }
+}
