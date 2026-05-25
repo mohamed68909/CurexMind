@@ -169,6 +169,46 @@ namespace ClinicManagement.API.Services
             if (appointment == null)
                 return Result.Failure<AppointmentDetailsResponse>(AppointmentErrors.NotFound);
 
+            var createdByName = "System";
+            if (!string.IsNullOrEmpty(appointment.CreatedById) && appointment.CreatedById != "System")
+            {
+                var createdByUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == appointment.CreatedById, cancel);
+                if (createdByUser != null)
+                {
+                    createdByName = createdByUser.FullName;
+                }
+            }
+
+            var updatedByName = "System";
+            if (!string.IsNullOrEmpty(appointment.UpdatedById) && appointment.UpdatedById != "System")
+            {
+                var updatedByUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == appointment.UpdatedById, cancel);
+                if (updatedByUser != null)
+                {
+                    updatedByName = updatedByUser.FullName;
+                }
+            }
+
+            var activityLog = new List<ActivityLogItem>
+            {
+                new ActivityLogItem
+                {
+                    Action = "Created",
+                    By = createdByName,
+                    Date = appointment.CreatedOn.ToString("yyyy-MM-dd")
+                }
+            };
+
+            if (appointment.UpdatedOn != null)
+            {
+                activityLog.Add(new ActivityLogItem
+                {
+                    Action = "Last Modified",
+                    By = updatedByName,
+                    Date = appointment.UpdatedOn.Value.ToString("yyyy-MM-dd")
+                });
+            }
+
             var response = new AppointmentDetailsResponse
             {
                 AppointmentId = appointment.Id.ToString(),
@@ -205,25 +245,7 @@ namespace ClinicManagement.API.Services
 
                 Notes = appointment.Notes ?? string.Empty,
 
-                ActivityLog = new List<ActivityLogItem>
-        {
-            new ActivityLogItem
-            {
-                Action = "Created",
-                By = appointment.CreatedBy?.FullName ?? "System",
-                Date = appointment.CreatedOn.ToString("yyyy-MM-dd") ?? string.Empty
-            },
-            appointment.UpdatedOn == null
-                ? null
-                : new ActivityLogItem
-                {
-                    Action = "Last Modified",
-                    By = appointment.UpdatedBy?.FullName ?? "System",
-                    Date = appointment.UpdatedOn.Value.ToString("yyyy-MM-dd")
-                }
-        }
-                .Where(x => x != null)
-                .ToList()
+                ActivityLog = activityLog
             };
 
             return Result.Success(response);

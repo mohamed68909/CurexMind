@@ -10,7 +10,7 @@ namespace ClinicManagement.API.Services.Interface
     public interface IDoctorService
     {
 
-        Task<Result<IEnumerable<DoctorListResponse>>> GetAll(CancellationToken cancellationToken = default);
+        Task<Result<PagedDoctorResponse>> GetAll(int page = 1, int pageSize = 10, string? search = null, CancellationToken cancellationToken = default);
         Task<Result<DoctorDetailsResponse>> GetAsync(Guid id, CancellationToken cancellationToken = default);
 
         Task<Result<DoctorDetailsResponse>> CreateAsync(CreateDoctorRequest request, CancellationToken cancellationToken = default);

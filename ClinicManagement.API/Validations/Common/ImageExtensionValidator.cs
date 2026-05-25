@@ -8,19 +8,18 @@ namespace ClinicManagement.API.Validations.Common
         public ImageExtensionValidator()
         {
             RuleFor(x => x)
-              .Must((request, context) =>
+              .Must(file =>
               {
-                  BinaryReader binary = new(request.OpenReadStream());
-                  var bytes = binary.ReadBytes(2); // glabal signuture
-
+                  // Fix: use 'using var' to ensure the stream is always disposed (stream leak fix)
+                  using var binary = new BinaryReader(file.OpenReadStream());
+                  var bytes = binary.ReadBytes(2); // global signature (magic bytes)
                   var fileSequenceHex = BitConverter.ToString(bytes);
-                  foreach (var signuture in FileSettings.ImageSettings.AllowedSignatures)
-                      if (signuture.Equals(fileSequenceHex, StringComparison.OrdinalIgnoreCase))
-                          return true;
-                  return false;
+
+                  return FileSettings.ImageSettings.AllowedSignatures
+                      .Any(sig => sig.Equals(fileSequenceHex, StringComparison.OrdinalIgnoreCase));
               })
               .WithMessage("Cover image must be a valid PNG, JPEG, GIF, or BMP file.")
-              .When(request => request is not null);
+              .When(file => file is not null);
         }
     }
 }

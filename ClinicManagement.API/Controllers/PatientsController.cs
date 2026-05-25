@@ -5,6 +5,7 @@ using ClinicManagement.API.Contracts.Patient.Requests;
 using ClinicManagement.API.Contracts.Patient.Respones;
 using ClinicManagement.API.Contracts.Patient.Responses;
 using ClinicManagement.API.Services.Interface;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PatientResponseDto = ClinicManagement.API.Contracts.Patient.Respones.PatientResponseDto;
@@ -17,10 +18,14 @@ namespace ClinicManagement.API.Controllers
     public class PatientsController : ControllerBase
     {
         private readonly IPatientService _patientService;
+        private readonly IValidator<PatientRequestDto> _validator;
 
-        public PatientsController(IPatientService patientService)
+        public PatientsController(
+            IPatientService patientService,
+            IValidator<PatientRequestDto> validator)
         {
             _patientService = patientService;
+            _validator = validator;
         }
 
        
@@ -52,9 +57,15 @@ namespace ClinicManagement.API.Controllers
         [HttpPost]
         [Authorize(Roles = DefaultRoles.Admin.Name)]
         [ProducesResponseType(typeof(PatientCreateResponseDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreatePatientAsync([FromForm] PatientRequestDto request, CancellationToken cancellationToken)
         {
-            var createdByUserId = User.GetUserId(); 
+            // Validate request using FluentValidation before calling the service
+            var validation = await _validator.ValidateAsync(request, cancellationToken);
+            if (!validation.IsValid)
+                return ValidationProblem(new ValidationProblemDetails(validation.ToDictionary()));
+
+            var createdByUserId = User.GetUserId();
             var result = await _patientService.CreateAsync(createdByUserId, request.ProfileImage, request, cancellationToken);
 
             return result.IsSuccess
@@ -66,10 +77,16 @@ namespace ClinicManagement.API.Controllers
         [HttpPut("{id:guid}")]
         [Authorize(Roles = $"{DefaultRoles.Admin.Name},{DefaultRoles.Patient.Name}")]
         [ProducesResponseType(typeof(PatientResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdatePatientAsync(Guid id, [FromForm] PatientRequestDto request)
         {
             if (!User.HasAccessToPatient(id))
                 return Forbid();
+
+            // Validate request using FluentValidation before calling the service
+            var validation = await _validator.ValidateAsync(request);
+            if (!validation.IsValid)
+                return ValidationProblem(new ValidationProblemDetails(validation.ToDictionary()));
 
             var result = await _patientService.UpdatePatientAsync(id, request.ProfileImage, request);
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();

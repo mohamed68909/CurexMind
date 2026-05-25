@@ -13,8 +13,6 @@ namespace ClinicManagement.API.Contracts.Patient.Responses
 
     )
     {
-        private Guid id;
-        private Gender gender;
 
 
     }

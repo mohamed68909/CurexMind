@@ -3,8 +3,10 @@ using ClinicManagement.API.Contracts.Invoice.Requests;
 using ClinicManagement.API.Contracts.Invoice.Responses;
 using ClinicManagement.API.Services.Interfaces;
 using ClinicManagement.API.Errors;
-using ClinicManagement.API.Errors;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 
 namespace ClinicManagement.API.Services
 {
@@ -45,6 +47,7 @@ namespace ClinicManagement.API.Services
             {
                 Id = Guid.CreateVersion7(),
                 InvoiceDate = DateTime.UtcNow,
+                InvoiceNumber = $"INV-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
                 PatientId = patient.PatientId,
                 DoctorId = doctor.Id,
                 ClinicId = doctor.ClinicId,
@@ -176,10 +179,14 @@ namespace ClinicManagement.API.Services
 
 
 
-        // GENERATE PDF (Stub)
+        // GENERATE PDF
         public async Task<Result<byte[]>> GeneratePdfExportAsync(Guid invoiceId, Guid? patientId = null, CancellationToken cancel = default)
         {
             var invoice = await _context.Invoices
+                .Include(i => i.Patient).ThenInclude(p => p.User)
+                .Include(i => i.Doctor).ThenInclude(d => d.Clinic)
+                .Include(i => i.Doctor).ThenInclude(d => d.User)
+                .Include(i => i.ServiceType)
                 .FirstOrDefaultAsync(i => i.Id == invoiceId && !i.IsDeleted, cancel);
 
             if (invoice == null)
@@ -188,8 +195,95 @@ namespace ClinicManagement.API.Services
             if (patientId.HasValue && invoice.PatientId != patientId.Value)
                 return Result.Failure<byte[]>(UserErrors.AccessDenied);
 
-            // TODO: Implement PDF generation
-            return Result.Success(Array.Empty<byte>());
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var patientName = invoice.Patient?.User?.FullName ?? "Unknown";
+            var doctorName = invoice.Doctor?.User?.FullName ?? "Unknown";
+            var clinicName = invoice.Doctor?.Clinic?.Name ?? "Unknown";
+            var serviceTypeName = invoice.ServiceType?.Name ?? "General Consultation";
+
+            var pdfBytes = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(2, Unit.Centimetre);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(11));
+
+                    page.Header()
+                        .Text("INVOICE")
+                        .FontColor(Colors.Blue.Darken2).FontSize(24).Bold();
+
+                    page.Content()
+                        .PaddingVertical(1, Unit.Centimetre)
+                        .Column(column =>
+                        {
+                            column.Spacing(20);
+
+                            column.Item().Row(row =>
+                            {
+                                row.RelativeItem().Column(col =>
+                                {
+                                    col.Item().Text($"Invoice Number: {invoice.InvoiceNumber}").Bold();
+                                    col.Item().Text($"Invoice Date: {invoice.InvoiceDate:yyyy-MM-dd}");
+                                    col.Item().Text($"Due Date: {invoice.DueDate?.ToString("yyyy-MM-dd") ?? "N/A"}");
+                                });
+
+                                row.RelativeItem().Column(col =>
+                                {
+                                    col.Item().Text($"Patient: {patientName}").Bold();
+                                    col.Item().Text($"Doctor: {doctorName}");
+                                    col.Item().Text($"Clinic: {clinicName}");
+                                });
+                            });
+
+                            column.Item().Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.RelativeColumn(3);
+                                    columns.RelativeColumn();
+                                });
+
+                                table.Header(header =>
+                                {
+                                    header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Description").Bold();
+                                    header.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Amount (EGP)").Bold();
+                                });
+
+                                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).Text($"Medical Services - {serviceTypeName}");
+                                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).Text($"{invoice.TotalAmountEGP:N2}");
+
+                                if (invoice.DiscountEGP > 0)
+                                {
+                                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).Text("Discount");
+                                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).Text($"-{invoice.DiscountEGP:N2}");
+                                }
+
+                                table.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text("Total").Bold();
+                                table.Cell().Background(Colors.Grey.Lighten3).Padding(5).Text($"{invoice.FinalAmountEGP:N2}").Bold();
+                            });
+
+                            column.Item().Text($"Status: {invoice.Status}").Bold();
+                            column.Item().Text($"Payment Method: {invoice.PaymentMethod}");
+                            if (!string.IsNullOrWhiteSpace(invoice.Notes))
+                            {
+                                column.Item().Text($"Notes: {invoice.Notes}");
+                            }
+                        });
+
+                    page.Footer()
+                        .AlignCenter()
+                        .Text(x =>
+                        {
+                            x.Span("Page ");
+                            x.CurrentPageNumber();
+                        });
+                });
+            }).GeneratePdf();
+
+            return Result.Success(pdfBytes);
         }
 
         // Helper method

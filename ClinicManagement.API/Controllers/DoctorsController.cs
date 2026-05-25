@@ -5,6 +5,7 @@ using ClinicManagement.API.Contracts.Doctors.Respones;
 using ClinicManagement.API.Contracts.Review.Requests;
 using ClinicManagement.API.Contracts.Review.Respones;
 using ClinicManagement.API.Services.Interface;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -16,19 +17,30 @@ namespace ClinicManagement.API.Controllers
     public class DoctorsController : ControllerBase
     {
         private readonly IDoctorService _doctorService;
+        private readonly IValidator<CreateDoctorRequest> _createValidator;
+        private readonly IValidator<UpdateDoctorRequest> _updateValidator;
 
-        public DoctorsController(IDoctorService doctorService)
+        public DoctorsController(
+            IDoctorService doctorService,
+            IValidator<CreateDoctorRequest> createValidator,
+            IValidator<UpdateDoctorRequest> updateValidator)
         {
             _doctorService = doctorService;
+            _createValidator = createValidator;
+            _updateValidator = updateValidator;
         }
 
         
         [HttpGet]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(IEnumerable<DoctorListResponse>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        [ProducesResponseType(typeof(PagedDoctorResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAll(
+            [FromQuery] string? search,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            CancellationToken cancellationToken = default)
         {
-            var result = await _doctorService.GetAll(cancellationToken);
+            var result = await _doctorService.GetAll(page, pageSize, search, cancellationToken);
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
 
@@ -47,10 +59,16 @@ namespace ClinicManagement.API.Controllers
         [HttpPost]
         [Authorize(Roles = DefaultRoles.Admin.Name)]
         [ProducesResponseType(typeof(DoctorDetailsResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateDoctor(
             [FromForm] CreateDoctorRequest request,
             CancellationToken cancellationToken)
         {
+            // Validate request using FluentValidation before calling the service
+            var validation = await _createValidator.ValidateAsync(request, cancellationToken);
+            if (!validation.IsValid)
+                return ValidationProblem(new ValidationProblemDetails(validation.ToDictionary()));
+
             var result = await _doctorService.CreateAsync(request, cancellationToken);
 
             return result.IsSuccess
@@ -62,11 +80,17 @@ namespace ClinicManagement.API.Controllers
         [HttpPut("{id:guid}")]
         [Authorize(Roles = DefaultRoles.Admin.Name)]
         [ProducesResponseType(typeof(DoctorDetailsResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateDoctor(
             Guid id,
             [FromForm] UpdateDoctorRequest request,
             CancellationToken cancellationToken)
         {
+            // Validate request using FluentValidation before calling the service
+            var validation = await _updateValidator.ValidateAsync(request, cancellationToken);
+            if (!validation.IsValid)
+                return ValidationProblem(new ValidationProblemDetails(validation.ToDictionary()));
+
             var result = await _doctorService.UpdateAsync(id, request, cancellationToken);
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
@@ -107,4 +131,4 @@ namespace ClinicManagement.API.Controllers
                 : result.ToProblem();
         }
     }
-}
+}

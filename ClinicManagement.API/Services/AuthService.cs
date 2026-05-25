@@ -81,12 +81,23 @@ public class AuthService(
         var userId = _jwtProvider.ValidateToken(request.Token);
         if (userId is null)
             return Result.Failure(UserErrors.InvalidToken);
-        if (await _userManager.FindByIdAsync(userId) is not { } user)
+
+        // Fix: Use EF Core directly with Include to eager-load RefreshTokens.
+        // _userManager.FindByIdAsync does NOT load related collections.
+        var user = await _context.Users
+            .Include(u => u.RefreshTokens)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null)
             return Result.Failure(UserErrors.NotFound);
+
+        if (user.IsDisabled)
+            return Result.Failure(UserErrors.UserDisabled);
 
         var refreshToken = user.RefreshTokens.SingleOrDefault(rt => rt.Token == request.RefreshToken);
         if (refreshToken is null)
             return Result.Failure(UserErrors.InvalidToken);
+
         if (refreshToken.RevokedOn is not null)
             return Result.Failure(UserErrors.RefreshTokenAlreadyRevoked);
 

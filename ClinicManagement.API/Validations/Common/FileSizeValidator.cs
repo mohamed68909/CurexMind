@@ -9,7 +9,9 @@ namespace ClinicManagement.API.Validations.Common
         {
             RuleFor(x => x)
                 .NotNull()
-                .WithMessage("PDF file is required.")
+                .WithMessage("PDF file is required.");
+
+            RuleFor(x => x)
                 .Must((request, context) => request.Length <= FileSettings.InvoiceSettings.MaxSizeInBytes)
                 .WithMessage($"PDF file size must not exceed {FileSettings.InvoiceSettings.MaxSizeInMB} MB.")
                 .When(request => request is not null);

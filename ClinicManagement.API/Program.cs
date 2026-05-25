@@ -30,10 +30,21 @@ namespace ClinicManagement.API
             });
             builder.Services.AddRateLimiter(options =>
             {
-                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                // Fix: Use OnRejected callback instead of a manual middleware after UseRateLimiter().
+                // Writing to the response after UseRateLimiter() causes an InvalidOperationException
+                // because the response has already started.
+                options.OnRejected = async (context, cancellationToken) =>
+                {
+                    context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                    context.HttpContext.Response.ContentType = "text/plain";
+                    await context.HttpContext.Response.WriteAsync(
+                        "Too many login attempts. Please try again later.",
+                        cancellationToken);
+                };
 
                 options.AddPolicy("AuthLimiter", httpContext =>
                 {
+                    // Use X-Forwarded-For header if available (handles reverse proxies)
                     var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
                     return RateLimitPartition.GetFixedWindowLimiter(
@@ -65,16 +76,7 @@ namespace ClinicManagement.API
             
             app.UseCors("AllowFrontend");
 
-         app.UseRateLimiter();
-            app.Use(async (context, next) =>
-            {
-                await next();
-
-                if (context.Response.StatusCode == StatusCodes.Status429TooManyRequests)
-                {
-                    await context.Response.WriteAsync("Too many login attempts. Please try again later.");
-                }
-            });
+            app.UseRateLimiter();
             app.UseAuthentication();
             app.UseAuthorization();
 

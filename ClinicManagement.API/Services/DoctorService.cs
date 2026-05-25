@@ -88,8 +88,7 @@ public class DoctorService : IDoctorService
                     Specialization = request.Specialization,
                     YearsOfExperience = request.YearsOfExperience,
                     Languages = request.Languages,
-
-                  
+                    Bio = request.Bio,
                     Price = request.Price
                 };
 
@@ -107,9 +106,7 @@ public class DoctorService : IDoctorService
                     YearsOfExperience = doctor.YearsOfExperience,
                     Languages = doctor.Languages,
                     ProfileImageUrl = user.ProfileImage?.StoredFileName,
-                    Bio=doctor.bio,
-
-                   
+                    Bio = doctor.Bio,
                     Price = doctor.Price
                 });
             }
@@ -147,8 +144,7 @@ public class DoctorService : IDoctorService
             ClinicName = doctor.Clinic.Name,
             YearsOfExperience = doctor.YearsOfExperience,
             Languages = doctor.Languages,
-            Bio=doctor.bio,
-
+            Bio = doctor.Bio,
             Price = doctor.Price,
 
             ProfileImageUrl = doctor.User?.ProfileImage?.StoredFileName,
@@ -164,30 +160,50 @@ public class DoctorService : IDoctorService
         });
     }
 
-    public async Task<Result<IEnumerable<DoctorListResponse>>> GetAll(CancellationToken ct = default)
+    public async Task<Result<PagedDoctorResponse>> GetAll(int page = 1, int pageSize = 10, string? search = null, CancellationToken ct = default)
     {
-        var list = await _context.Doctors
+        IQueryable<Doctor> query = _context.Doctors
             .Include(d => d.Clinic)
             .Include(d => d.User).ThenInclude(u => u.ProfileImage)
-            .Include(u => u.Reviews)
+            .Include(u => u.Reviews);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchLower = search.ToLower();
+            query = query.Where(d => 
+                d.FullName.ToLower().Contains(searchLower) ||
+                d.Specialization.ToLower().Contains(searchLower) ||
+                d.Clinic.Name.ToLower().Contains(searchLower));
+        }
+
+        var totalCount = await query.CountAsync(ct);
+
+        var list = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(ct);
 
-        return Result.Success(
-            list.Select(d => new DoctorListResponse
-            {
-                Id = d.Id,
-                FullName = d.FullName,
-                Specialization = d.Specialization,
-                ClinicName = d.Clinic.Name,
-                ProfileImageUrl = d.User?.ProfileImage?.StoredFileName,
-                
-             
-                Price = d.Price,
+        var data = list.Select(d => new DoctorListResponse
+        {
+            Id = d.Id,
+            FullName = d.FullName,
+            Specialization = d.Specialization,
+            ClinicName = d.Clinic.Name,
+            ProfileImageUrl = d.User?.ProfileImage?.StoredFileName ?? string.Empty,
+            Price = d.Price,
+            ReviewsCount = d.Reviews.Count,
+            Rating = d.Reviews.Count == 0 ? 0 : d.Reviews.Average(r => r.Rating)
+        }).ToList();
 
-                ReviewsCount = d.Reviews.Count,
-                Rating = d.Reviews.Count == 0 ? 0 : d.Reviews.Average(r => r.Rating)
-            })
+        var response = new PagedDoctorResponse(
+            Data: data,
+            TotalCount: totalCount,
+            Page: page,
+            PageSize: pageSize,
+            TotalPages: (int)Math.Ceiling(totalCount / (double)pageSize)
         );
+
+        return Result.Success(response);
     }
 
     public async Task<Result<DoctorDetailsResponse>> UpdateAsync(
@@ -224,9 +240,7 @@ public class DoctorService : IDoctorService
         doctor.Specialization = request.Specialization;
         doctor.YearsOfExperience = request.YearsOfExperience;
         doctor.Languages = request.Languages;
-        doctor.bio= request.boi;
-
-       
+        doctor.Bio = request.Bio;
         doctor.Price = request.Price;
 
         // Update image

@@ -16,7 +16,7 @@ namespace ClinicManagement.API.Entities
         public decimal FinalAmountEGP { get; set; }
         public decimal PaidAmountEGP { get; set; }
         public Guid ServiceTypeId { get; set; }
-        public ServiceType ServiceType { get; set; }
+        public ServiceType ServiceType { get; set; } = default!;
         public string InvoiceNumber { get; set; } = string.Empty;
         public DateTime InvoiceDate { get; set; }
         public InvoiceStatus Status { get; set; }

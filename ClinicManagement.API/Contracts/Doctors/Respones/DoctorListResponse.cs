@@ -6,7 +6,7 @@ namespace ClinicManagement.API.Contracts.Clinic.Respones
         public string FullName { get; init; } = string.Empty;
         public string Specialization { get; init; } = string.Empty;
         public string ClinicName { get; init; } = string.Empty;
-        public string ProfileImageUrl { get; init; } 
+        public string ProfileImageUrl { get; init; } = string.Empty;
         public decimal Price { get; init; }
         public double Rating { get; init; }
         public int ReviewsCount { get; init; }
@@ -14,5 +14,14 @@ namespace ClinicManagement.API.Contracts.Clinic.Respones
         public DateTime NextAvailable { get; init; }
 
     }
+
+    public record PagedDoctorResponse
+    (
+        IEnumerable<DoctorListResponse> Data,
+        int TotalCount,
+        int Page,
+        int PageSize,
+        int TotalPages
+    );
 
 }
