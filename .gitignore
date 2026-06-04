@@ -361,3 +361,15 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# ============================================================
+# SECURITY: ASP.NET Core secrets — NEVER commit these files
+# ============================================================
+# appsettings.Development.json contains real DB passwords and JWT keys
+appsettings.Development.json
+# appsettings.json is kept as a safe template (no real secrets)
+# If you accidentally add secrets to it, add it here too:
+# appsettings.json
+
+# .NET user secrets
+secrets.json
