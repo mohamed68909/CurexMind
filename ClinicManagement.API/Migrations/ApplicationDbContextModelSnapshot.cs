@@ -758,7 +758,7 @@ namespace ClinicManagement.API.Migrations
                             CreatedAt = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             DoctorId = new Guid("22222222-2222-2222-2222-222222222222"),
                             Rating = 5,
-                            UserId = "f70250f2-ece4-44da-a1a8-ffad173d3dde"
+                            UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358"
                         });
                 });
 
@@ -891,7 +891,7 @@ namespace ClinicManagement.API.Migrations
                             StartDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Status = "Active",
                             StayType = "Inpatient",
-                            UpdatedById = "System",
+                            UpdatedById = (string)null,
                             UpdatedOn = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
                 });
@@ -901,6 +901,10 @@ namespace ClinicManagement.API.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("ClinicId")
                         .HasColumnType("uniqueidentifier");
@@ -951,10 +955,6 @@ namespace ClinicManagement.API.Migrations
                     b.Property<int>("YearsOfExperience")
                         .HasColumnType("int");
 
-                    b.Property<string>("bio")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ClinicId");
@@ -970,6 +970,7 @@ namespace ClinicManagement.API.Migrations
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            Bio = "",
                             ClinicId = new Guid("33333333-3333-3333-3333-333333333333"),
                             CreatedById = "system",
                             CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -979,8 +980,7 @@ namespace ClinicManagement.API.Migrations
                             Price = 0m,
                             Specialization = "Cardiology",
                             UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
-                            YearsOfExperience = 12,
-                            bio = ""
+                            YearsOfExperience = 12
                         });
                 });
 
@@ -1505,3 +1505,5 @@ namespace ClinicManagement.API.Migrations
         }
     }
 }
+
+

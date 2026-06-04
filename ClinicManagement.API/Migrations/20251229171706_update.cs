@@ -35,7 +35,7 @@ namespace ClinicManagement.API.Migrations
                 keyColumn: "Id",
                 keyValue: new Guid("88888888-8888-8888-8888-888888888888"),
                 columns: new[] { "PatientId", "UserId" },
-                values: new object[] { null, "f70250f2-ece4-44da-a1a8-ffad173d3dde" });
+                values: new object[] { null, "4E14506C-D3C0-4AE3-8616-5EB95A764358" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reviews_UserId",

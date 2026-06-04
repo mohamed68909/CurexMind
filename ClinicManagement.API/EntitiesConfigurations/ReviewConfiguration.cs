@@ -43,7 +43,7 @@ namespace ClinicManagement.API.EntitiesConfigurations
                     Comment = "Excellent service!",
                     CreatedAt = new DateTime(2025, 09, 15),
                     ClinicId = Guid.Parse("33333333-3333-3333-3333-333333333333"),
-                    UserId = "f70250f2-ece4-44da-a1a8-ffad173d3dde",
+                    UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358",
                     DoctorId = Guid.Parse("22222222-2222-2222-2222-222222222222")
                 }
             );

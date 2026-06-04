@@ -52,13 +52,13 @@ namespace ClinicManagement.API.Data
                     entry.Entity.CreatedOn = DateTime.UtcNow;
                     entry.Entity.CreatedById = userId ?? "System";
                     entry.Entity.UpdatedOn = DateTime.UtcNow;
-                    entry.Entity.UpdatedById = userId ?? "System";
+                    entry.Entity.UpdatedById = userId;
                     entry.Entity.IsDeleted = false;
                 }
                 else if (entry.State == EntityState.Modified)
                 {
                     entry.Entity.UpdatedOn = DateTime.UtcNow;
-                    entry.Entity.UpdatedById = userId ?? "System";
+                    entry.Entity.UpdatedById = userId;
                 }
             }
         }

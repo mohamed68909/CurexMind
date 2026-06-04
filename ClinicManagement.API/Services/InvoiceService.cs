@@ -161,8 +161,8 @@ namespace ClinicManagement.API.Services
                 InvoiceNumber = i.InvoiceNumber,
                 InvoiceDate = i.InvoiceDate,
 
-                PatientName = i.Patient.User.FullName,
-                DoctorName = i.Doctor.User.FullName,
+                PatientName = i.Patient?.User?.FullName ?? string.Empty,
+                DoctorName = i.Doctor?.User?.FullName ?? string.Empty,
 
                 ServiceType = i.ServiceType.Name,
 
@@ -294,9 +294,9 @@ namespace ClinicManagement.API.Services
                 InvoiceId = invoice.Id,
                 InvoiceDate = invoice.InvoiceDate,
                 PaymentStatus = invoice.Status.ToString(),
-                ClinicName = doctor.Clinic.Name,
-                Patient = new PatientResponseDto { Id = patient.PatientId, Name = patient.User.FullName },
-                Doctor = new DoctorResponseDto { Id = doctor.Id, Name = doctor.User.FullName },
+                ClinicName = doctor.Clinic?.Name ?? string.Empty,
+                Patient = new PatientResponseDto { Id = patient.PatientId, Name = patient.User?.FullName ?? string.Empty },
+                Doctor = new DoctorResponseDto { Id = doctor.Id, Name = doctor.User?.FullName ?? string.Empty },
                 AmountBreakdown = new AmountBreakdownDto
                 {
                     ServiceCharge = invoice.TotalAmountEGP,

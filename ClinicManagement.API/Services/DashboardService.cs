@@ -62,8 +62,8 @@ public class DashboardService : IDashboardService
                 .Select(a => new AppointmentDto
                 {
                     Time = a.AppointmentTime.ToString(@"hh\:mm"),
-                    Patient = a.Patient.User.FullName,
-                    Doctor = a.Doctor.FullName,
+                    Patient = a.Patient != null && a.Patient.User != null ? a.Patient.User.FullName : string.Empty,
+                    Doctor = a.Doctor != null ? a.Doctor.FullName : string.Empty,
                     Status = a.Status.ToString()
                 })
                 .ToListAsync();
@@ -75,7 +75,7 @@ public class DashboardService : IDashboardService
                 .OrderBy(i => i.DueDate)
                 .Select(i => new InvoiceFollowUpDto
                 {
-                    Patient = i.Patient.User.FullName,
+                    Patient = i.Patient != null && i.Patient.User != null ? i.Patient.User.FullName : string.Empty,
                     AmountEGP = i.FinalAmountEGP - i.PaidAmountEGP,
                     Status = i.Status.ToString()
                 })

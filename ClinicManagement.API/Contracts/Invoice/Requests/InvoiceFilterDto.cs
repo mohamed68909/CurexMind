@@ -2,13 +2,13 @@ namespace ClinicManagement.API.Contracts.Invoice.Requests
 {
     public class InvoiceFilterDto
     {
-        public string SearchQuery { get; set; }
+        public string? SearchQuery { get; set; }
 
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
 
-        public string PaymentStatus { get; set; }
-        public string PaymentMethod { get; set; }
+        public string? PaymentStatus { get; set; }
+        public string? PaymentMethod { get; set; }
 
         public Guid? DoctorId { get; set; }
         public Guid? ServiceTypeId { get; set; }

@@ -61,7 +61,7 @@ namespace ClinicManagement.API.Migrations
                 keyColumn: "Id",
                 keyValue: new Guid("77777777-7777-7777-7777-777777777777"),
                 columns: new[] { "CreatedById", "CreatedOn", "DeletedById", "DeletedOn", "IsDeleted", "UpdatedById", "UpdatedOn" },
-                values: new object[] { "System", new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, false, "System", new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified) });
+                values: new object[] { "System", new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, false, null, new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified) });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Stays_UpdatedById",

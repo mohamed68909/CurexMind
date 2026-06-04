@@ -22,6 +22,8 @@ namespace ClinicManagement.API
                     policy
                         .WithOrigins(
                             "http://127.0.0.1:5500",          // Local Frontend
+                            "http://localhost:5173",          // Local React App
+                            "http://127.0.0.1:5173",          // Local React App IP
                             "https://mohamed68909.github.io", // GitHub Pages
                             "https://ClinicManagement.netlify.app")  // Netlify
                         .AllowAnyHeader()
@@ -65,11 +67,8 @@ namespace ClinicManagement.API
             });
 
             
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
 

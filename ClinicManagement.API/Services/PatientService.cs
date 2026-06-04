@@ -155,17 +155,17 @@ public class PatientService : IPatientService
         return Result.Success(
             new PatientResponseDto(
                 p.PatientId,
-                p.User.FullName,
+                p.User?.FullName ?? string.Empty,
                 p.Gender,
                 p.DateOfBirth,
                 CalculateAge(p.DateOfBirth),
                 p.SocialStatus,
-                p.User.PhoneNumber!,
-                p.User.Email!,
+                p.User?.PhoneNumber ?? string.Empty,
+                p.User?.Email ?? string.Empty,
                 p.NationalId,
                 p.Address,
                 p.Notes,
-                p.User.ProfileImage?.StoredFileName,
+                p.User?.ProfileImage?.StoredFileName,
                 p.CreatedOn
             )
         );

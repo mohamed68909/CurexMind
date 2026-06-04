@@ -756,7 +756,7 @@ namespace ClinicManagement.API.Migrations
                             CreatedAt = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             DoctorId = new Guid("22222222-2222-2222-2222-222222222222"),
                             Rating = 5,
-                            UserId = "f70250f2-ece4-44da-a1a8-ffad173d3dde"
+                            UserId = "4E14506C-D3C0-4AE3-8616-5EB95A764358"
                         });
                 });
 
@@ -1462,3 +1462,4 @@ namespace ClinicManagement.API.Migrations
         }
     }
 }
+

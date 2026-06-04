@@ -68,7 +68,7 @@ namespace ClinicManagement.API.EntitiesConfigurations
                     Notes = "Patient admitted for observation.",
                     CreatedById = "System",
                     CreatedOn = new DateTime(2025, 09, 15),
-                    UpdatedById = "System",
+                    UpdatedById = null,
                     UpdatedOn = new DateTime(2025, 09, 15),
                     IsDeleted = false
                 }

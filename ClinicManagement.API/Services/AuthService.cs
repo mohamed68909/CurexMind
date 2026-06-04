@@ -58,6 +58,24 @@ public class AuthService(
             return Result.Failure<AuthResponse>(new Error(error.Code, error.Description));
         }
 
+        // Create a linked Patient record so the JWT token includes a valid patientId claim.
+        // Without this, newly registered users cannot use the patient portal (appointments, invoices, etc.)
+        // because all patient routes enforce HasAccessToPatient(patientId) which reads the patientId claim.
+        var patient = new Patient
+        {
+            PatientId = Guid.NewGuid(),
+            UserId = user.Id,
+            Gender = Gender.Other,
+            SocialStatus = SocialStatus.Single,
+            DateOfBirth = DateTime.UtcNow.AddYears(-18), // Default placeholder — patient can update their profile later
+            NationalId = string.Empty,
+            Address = request.Address,
+            IsDeleted = false
+        };
+
+        await _context.Patients.AddAsync(patient, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
         return Result.Success(await GetAuthResponse(user));
     }
 
