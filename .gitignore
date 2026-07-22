@@ -372,4 +372,7 @@ appsettings.Development.json
 # appsettings.json
 
 # .NET user secrets
-secrets.json
+secrets.json
+
+# Screenshots / Image Design folder
+image/
